@@ -45,8 +45,8 @@ const mockStudents = [
 
 const Dashboard = () => {
   const [searchQuery, setSearchQuery] = useState("");
-  const [courseFilter, setCourseFilter] = useState("");
-  const [statusFilter, setStatusFilter] = useState("");
+  const [courseFilter, setCourseFilter] = useState("all-courses");
+  const [statusFilter, setStatusFilter] = useState("all-status");
 
   const getStatusStyle = (status: string) => {
     switch (status) {
@@ -76,8 +76,8 @@ const Dashboard = () => {
                          student.interests.some(interest => 
                            interest.toLowerCase().includes(searchQuery.toLowerCase())
                          );
-    const matchesCourse = !courseFilter || student.course === courseFilter;
-    const matchesStatus = !statusFilter || student.status === statusFilter;
+    const matchesCourse = courseFilter === "all-courses" || student.course === courseFilter;
+    const matchesStatus = statusFilter === "all-status" || student.status === statusFilter;
     
     return matchesSearch && matchesCourse && matchesStatus;
   });
@@ -114,7 +114,7 @@ const Dashboard = () => {
               <SelectValue placeholder="Filter by course" />
             </SelectTrigger>
             <SelectContent>
-              <SelectItem value="">All Courses</SelectItem>
+              <SelectItem value="all-courses">All Courses</SelectItem>
               <SelectItem value="Computer Science">Computer Science</SelectItem>
               <SelectItem value="Data Science">Data Science</SelectItem>
               <SelectItem value="Mathematics">Mathematics</SelectItem>
@@ -126,7 +126,7 @@ const Dashboard = () => {
               <SelectValue placeholder="Status" />
             </SelectTrigger>
             <SelectContent>
-              <SelectItem value="">All Status</SelectItem>
+              <SelectItem value="all-status">All Status</SelectItem>
               <SelectItem value="available">Available</SelectItem>
               <SelectItem value="busy">Busy</SelectItem>
               <SelectItem value="offline">Offline</SelectItem>
@@ -141,7 +141,7 @@ const Dashboard = () => {
               <UserPlus className="h-12 w-12 text-muted-foreground mx-auto mb-4" />
               <h3 className="text-lg font-semibold mb-2">No students found</h3>
               <p className="text-muted-foreground mb-6">
-                {searchQuery || courseFilter || statusFilter 
+                {searchQuery || (courseFilter !== "all-courses") || (statusFilter !== "all-status")
                   ? "Try adjusting your filters to see more results."
                   : "No students yet. Add your first student."
                 }
