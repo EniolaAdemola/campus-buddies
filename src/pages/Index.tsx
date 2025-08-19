@@ -119,7 +119,7 @@ const Index = () => {
             <div>
               <div className="flex items-center gap-2 text-xl font-bold mb-4">
                 <BookOpen className="h-6 w-6" />
-                StudyBuddy
+                LisioBuddy
               </div>
               <p className="text-background/70">
                 Connecting students for better learning experiences.
@@ -159,7 +159,7 @@ const Index = () => {
             </div>
           </div>
           <div className="border-t border-background/10 mt-8 pt-8 text-center text-background/70">
-            <p>&copy; 2024 StudyBuddy. All rights reserved.</p>
+            <p>&copy; 2024 LisioBuddy. All rights reserved.</p>
           </div>
         </div>
       </footer>

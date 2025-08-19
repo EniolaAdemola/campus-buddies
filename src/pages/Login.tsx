@@ -18,7 +18,7 @@ const Login = () => {
         <div className="text-center mb-8">
           <Link to="/" className="inline-flex items-center gap-2 text-2xl font-bold text-primary">
             <BookOpen className="h-8 w-8" />
-            StudyBuddy
+            LisioBuddy
           </Link>
           <h2 className="mt-6 text-3xl font-bold">Welcome back</h2>
           <p className="mt-2 text-muted-foreground">

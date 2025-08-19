@@ -10,7 +10,7 @@ const Navigation = () => {
           {/* Logo */}
           <Link to="/" className="flex items-center gap-2 text-xl font-bold text-primary">
             <BookOpen className="h-6 w-6" />
-            StudyBuddy
+            LisioBuddy
           </Link>
 
           {/* Navigation Links */}

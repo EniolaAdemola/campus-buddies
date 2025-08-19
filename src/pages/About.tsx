@@ -8,7 +8,7 @@ const About = () => {
       <section className="container mx-auto px-4 py-16 lg:py-24">
         <div className="text-center max-w-3xl mx-auto">
           <h1 className="text-4xl lg:text-6xl font-bold mb-6">
-            About StudyBuddy
+            About LisioBuddy
           </h1>
           <p className="text-xl text-muted-foreground leading-relaxed">
             Our mission is simple: helping students connect, learn, and grow together. 

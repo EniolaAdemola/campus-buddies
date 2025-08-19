@@ -21,16 +21,16 @@ const Support = () => {
       answer: "Yes! You can connect with multiple study partners and coordinate group study sessions. Use the messaging feature to organize your group."
     },
     {
-      question: "Is StudyBuddy free to use?",
-      answer: "Yes, StudyBuddy is completely free for all students. We believe in making collaborative learning accessible to everyone."
+      question: "Is LisioBuddy free to use?",
+      answer: "Yes, LisioBuddy is completely free for all students. We believe in making collaborative learning accessible to everyone."
     },
     {
       question: "How do I report inappropriate behavior?",
       answer: "If you encounter any inappropriate behavior, please use the report button on the user's profile or contact our support team directly."
     },
     {
-      question: "Can I use StudyBuddy on my mobile device?",
-      answer: "Yes! StudyBuddy is fully responsive and works great on all devices including smartphones and tablets."
+      question: "Can I use LisioBuddy on my mobile device?",
+      answer: "Yes! LisioBuddy is fully responsive and works great on all devices including smartphones and tablets."
     }
   ];
 
@@ -47,7 +47,7 @@ const Support = () => {
             Support & FAQs
           </h1>
           <p className="text-xl text-muted-foreground max-w-2xl mx-auto">
-            Find answers to common questions or get help with using StudyBuddy
+            Find answers to common questions or get help with using LisioBuddy
           </p>
         </div>
 
