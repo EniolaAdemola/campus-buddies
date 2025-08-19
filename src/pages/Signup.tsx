@@ -3,13 +3,30 @@ import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import { Checkbox } from "@/components/ui/checkbox";
 import { BookOpen } from "lucide-react";
+import { useState } from "react";
 
 const Signup = () => {
+  // Unique admin passwords
+  const ADMIN_PASSWORDS = [
+    "ADMIN2024_LISIO_001",
+    "ADMIN2024_LISIO_002", 
+    "ADMIN2024_LISIO_003",
+    "ADMIN2024_LISIO_004",
+    "ADMIN2024_LISIO_005"
+  ];
+
+  const [isAdmin, setIsAdmin] = useState(false);
+  const [adminPassword, setAdminPassword] = useState("");
+
+  const isAdminPasswordValid = isAdmin ? ADMIN_PASSWORDS.includes(adminPassword) : true;
+  const isCreateButtonEnabled = !isAdmin || isAdminPasswordValid;
+
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     // Handle signup and redirect to dashboard
-    console.log("Signup submitted");
+    console.log("Signup submitted", { isAdmin, adminPasswordValid: isAdminPasswordValid });
   };
 
   return (
@@ -68,7 +85,47 @@ const Signup = () => {
               />
             </div>
 
-            <Button type="submit" variant="hero" size="lg" className="w-full">
+            <div className="flex items-center space-x-2">
+              <Checkbox 
+                id="isAdmin" 
+                checked={isAdmin}
+                onCheckedChange={(checked) => {
+                  setIsAdmin(checked as boolean);
+                  if (!checked) {
+                    setAdminPassword("");
+                  }
+                }}
+              />
+              <Label htmlFor="isAdmin" className="text-sm font-medium">
+                I am an Admin
+              </Label>
+            </div>
+
+            {isAdmin && (
+              <div className="space-y-2">
+                <Label htmlFor="adminPassword">Admin Password</Label>
+                <Input
+                  id="adminPassword"
+                  type="password"
+                  placeholder="Enter admin password"
+                  value={adminPassword}
+                  onChange={(e) => setAdminPassword(e.target.value)}
+                  required={isAdmin}
+                  className={!isAdminPasswordValid && adminPassword ? "border-destructive" : ""}
+                />
+                {!isAdminPasswordValid && adminPassword && (
+                  <p className="text-sm text-destructive">Invalid admin password</p>
+                )}
+              </div>
+            )}
+
+            <Button 
+              type="submit" 
+              variant="hero" 
+              size="lg" 
+              className="w-full"
+              disabled={!isCreateButtonEnabled}
+            >
               Create Account
             </Button>
 
