@@ -1,4 +1,4 @@
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
@@ -6,8 +6,13 @@ import { Label } from "@/components/ui/label";
 import { Checkbox } from "@/components/ui/checkbox";
 import { BookOpen } from "lucide-react";
 import { useState } from "react";
+import { supabase } from "@/integrations/supabase/client";
+import { useToast } from "@/hooks/use-toast";
 
 const Signup = () => {
+  const navigate = useNavigate();
+  const { toast } = useToast();
+  
   // Unique admin passwords
   const ADMIN_PASSWORDS = [
     "ADMIN2024_LISIO_001",
@@ -19,14 +24,99 @@ const Signup = () => {
 
   const [isAdmin, setIsAdmin] = useState(false);
   const [adminPassword, setAdminPassword] = useState("");
+  const [loading, setLoading] = useState(false);
+  const [formData, setFormData] = useState({
+    fullName: "",
+    email: "",
+    password: "",
+    confirmPassword: ""
+  });
 
   const isAdminPasswordValid = isAdmin ? ADMIN_PASSWORDS.includes(adminPassword) : true;
   const isCreateButtonEnabled = !isAdmin || isAdminPasswordValid;
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    setFormData({
+      ...formData,
+      [e.target.id]: e.target.value
+    });
+  };
+
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    // Handle signup and redirect to dashboard
-    console.log("Signup submitted", { isAdmin, adminPasswordValid: isAdminPasswordValid });
+    
+    if (formData.password !== formData.confirmPassword) {
+      toast({
+        title: "Password mismatch",
+        description: "Passwords do not match. Please try again.",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    if (isAdmin && !isAdminPasswordValid) {
+      toast({
+        title: "Invalid admin password",
+        description: "Please enter a valid admin password.",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    setLoading(true);
+
+    try {
+      const redirectUrl = `${window.location.origin}/dashboard`;
+      
+      const { data, error } = await supabase.auth.signUp({
+        email: formData.email,
+        password: formData.password,
+        options: {
+          emailRedirectTo: redirectUrl,
+          data: {
+            full_name: formData.fullName,
+            is_admin: isAdmin
+          }
+        }
+      });
+
+      if (error) {
+        toast({
+          title: "Signup failed",
+          description: error.message,
+          variant: "destructive",
+        });
+        return;
+      }
+
+      if (data.user) {
+        toast({
+          title: "Account created successfully!",
+          description: "Please check your email to confirm your account.",
+        });
+        
+        // Save user data to localStorage
+        const userData = {
+          id: data.user.id,
+          email: data.user.email,
+          fullName: formData.fullName,
+          isAdmin: isAdmin
+        };
+        localStorage.setItem('userData', JSON.stringify(userData));
+        
+        console.log("User signed up:", userData);
+        navigate('/dashboard');
+      }
+    } catch (error) {
+      console.error("Signup error:", error);
+      toast({
+        title: "Signup failed",
+        description: "An unexpected error occurred. Please try again.",
+        variant: "destructive",
+      });
+    } finally {
+      setLoading(false);
+    }
   };
 
   return (
@@ -51,6 +141,8 @@ const Signup = () => {
                 id="fullName"
                 type="text"
                 placeholder="Enter your full name"
+                value={formData.fullName}
+                onChange={handleInputChange}
                 required
               />
             </div>
@@ -61,6 +153,8 @@ const Signup = () => {
                 id="email"
                 type="email"
                 placeholder="Enter your email"
+                value={formData.email}
+                onChange={handleInputChange}
                 required
               />
             </div>
@@ -71,6 +165,8 @@ const Signup = () => {
                 id="password"
                 type="password"
                 placeholder="Create a password"
+                value={formData.password}
+                onChange={handleInputChange}
                 required
               />
             </div>
@@ -81,6 +177,8 @@ const Signup = () => {
                 id="confirmPassword"
                 type="password"
                 placeholder="Confirm your password"
+                value={formData.confirmPassword}
+                onChange={handleInputChange}
                 required
               />
             </div>
@@ -124,9 +222,9 @@ const Signup = () => {
               variant="hero" 
               size="lg" 
               className="w-full"
-              disabled={!isCreateButtonEnabled}
+              disabled={!isCreateButtonEnabled || loading}
             >
-              Create Account
+              {loading ? "Creating Account..." : "Create Account"}
             </Button>
 
             <div className="text-xs text-center text-muted-foreground">

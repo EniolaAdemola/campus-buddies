@@ -1,15 +1,89 @@
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { BookOpen } from "lucide-react";
+import { useState } from "react";
+import { supabase } from "@/integrations/supabase/client";
+import { useToast } from "@/hooks/use-toast";
 
 const Login = () => {
-  const handleSubmit = (e: React.FormEvent) => {
+  const navigate = useNavigate();
+  const { toast } = useToast();
+  const [loading, setLoading] = useState(false);
+  const [formData, setFormData] = useState({
+    email: "",
+    password: ""
+  });
+
+  const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    setFormData({
+      ...formData,
+      [e.target.id]: e.target.value
+    });
+  };
+
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    // Handle login
-    console.log("Login submitted");
+    setLoading(true);
+
+    try {
+      const { data, error } = await supabase.auth.signInWithPassword({
+        email: formData.email,
+        password: formData.password,
+      });
+
+      if (error) {
+        toast({
+          title: "Login failed",
+          description: error.message,
+          variant: "destructive",
+        });
+        return;
+      }
+
+      if (data.user) {
+        // Fetch user profile to get admin status
+        const { data: profile, error: profileError } = await supabase
+          .from('profiles')
+          .select('*')
+          .eq('user_id', data.user.id)
+          .single();
+
+        const userData = {
+          id: data.user.id,
+          email: data.user.email,
+          fullName: profile?.full_name || '',
+          isAdmin: profile?.is_admin || false
+        };
+
+        // Save user data to localStorage
+        localStorage.setItem('userData', JSON.stringify(userData));
+        
+        // Console log user details including admin status
+        console.log("User logged in:", {
+          ...userData,
+          sessionData: data.session
+        });
+
+        toast({
+          title: "Login successful!",
+          description: `Welcome back${userData.isAdmin ? ', Admin' : ''}!`,
+        });
+
+        navigate('/dashboard');
+      }
+    } catch (error) {
+      console.error("Login error:", error);
+      toast({
+        title: "Login failed",
+        description: "An unexpected error occurred. Please try again.",
+        variant: "destructive",
+      });
+    } finally {
+      setLoading(false);
+    }
   };
 
   return (
@@ -34,6 +108,8 @@ const Login = () => {
                 id="email"
                 type="email"
                 placeholder="Enter your email"
+                value={formData.email}
+                onChange={handleInputChange}
                 required
               />
             </div>
@@ -44,12 +120,14 @@ const Login = () => {
                 id="password"
                 type="password"
                 placeholder="Enter your password"
+                value={formData.password}
+                onChange={handleInputChange}
                 required
               />
             </div>
 
-            <Button type="submit" variant="hero" size="lg" className="w-full">
-              Sign In
+            <Button type="submit" variant="hero" size="lg" className="w-full" disabled={loading}>
+              {loading ? "Signing In..." : "Sign In"}
             </Button>
 
             <div className="relative">
