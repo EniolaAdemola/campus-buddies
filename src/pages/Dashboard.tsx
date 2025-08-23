@@ -1,10 +1,21 @@
 import { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 import { Badge } from "@/components/ui/badge";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
-import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog";
 import { Search, Filter, Plus, Eye, Edit, UserPlus } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
@@ -64,7 +75,7 @@ const Dashboard = () => {
   }, []);
 
   const loadCurrentUser = async () => {
-    const userData = JSON.parse(localStorage.getItem('userData') || '{}');
+    const userData = JSON.parse(localStorage.getItem("userData") || "{}");
     setCurrentUser(userData);
   };
 
@@ -72,27 +83,28 @@ const Dashboard = () => {
     try {
       setLoading(true);
       const { data, error } = await supabase
-        .from('profiles')
-        .select('*')
-        .order('full_name');
+        .from("profiles")
+        .select("*")
+        .order("full_name");
 
       if (error) {
-        console.error('Error fetching profiles:', error);
+        console.error("Error fetching profiles:", error);
         toast({
           title: "Error",
           description: "Failed to load student profiles",
-          variant: "destructive"
+          variant: "destructive",
         });
         return;
       }
 
       setProfiles(data || []);
-      
       // Extract unique courses for filter
-      const courses = [...new Set(data?.map(p => p.course).filter(Boolean) || [])];
+      const courses = [
+        ...new Set(data?.map((p) => p.course).filter(Boolean) || []),
+      ];
       setAvailableCourses(courses);
     } catch (error) {
-      console.error('Error:', error);
+      console.error("Error:", error);
     } finally {
       setLoading(false);
     }
@@ -109,14 +121,14 @@ const Dashboard = () => {
       toast({
         title: "Access Denied",
         description: "You can only edit your own profile",
-        variant: "destructive"
+        variant: "destructive",
       });
       return;
     }
     // TODO: Implement edit functionality
     toast({
       title: "Edit Profile",
-      description: "Edit functionality will be implemented soon"
+      description: "Edit functionality will be implemented soon",
     });
   };
 
@@ -124,8 +136,10 @@ const Dashboard = () => {
     if (!lastActive) return "Never";
     const date = new Date(lastActive);
     const now = new Date();
-    const diffInHours = Math.floor((now.getTime() - date.getTime()) / (1000 * 60 * 60));
-    
+    const diffInHours = Math.floor(
+      (now.getTime() - date.getTime()) / (1000 * 60 * 60)
+    );
+
     if (diffInHours < 1) return "Just now";
     if (diffInHours < 24) return `${diffInHours} hours ago`;
     const diffInDays = Math.floor(diffInHours / 24);
@@ -133,19 +147,22 @@ const Dashboard = () => {
     return `${diffInDays} days ago`;
   };
 
-  const filteredStudents = profiles.filter(profile => {
-    const name = profile.full_name || '';
-    const course = profile.course || '';
+  const filteredStudents = profiles.filter((profile) => {
+    const name = profile.full_name || "";
+    const course = profile.course || "";
     const interests = profile.interests || [];
-    
-    const matchesSearch = name.toLowerCase().includes(searchQuery.toLowerCase()) ||
-                         course.toLowerCase().includes(searchQuery.toLowerCase()) ||
-                         interests.some(interest => 
-                           interest.toLowerCase().includes(searchQuery.toLowerCase())
-                         );
-    const matchesCourse = courseFilter === "all-courses" || course === courseFilter;
-    const matchesStatus = statusFilter === "all-status" || profile.status === statusFilter;
-    
+
+    const matchesSearch =
+      name.toLowerCase().includes(searchQuery.toLowerCase()) ||
+      course.toLowerCase().includes(searchQuery.toLowerCase()) ||
+      interests.some((interest) =>
+        interest.toLowerCase().includes(searchQuery.toLowerCase())
+      );
+    const matchesCourse =
+      courseFilter === "all-courses" || course === courseFilter;
+    const matchesStatus =
+      statusFilter === "all-status" || profile.status === statusFilter;
+
     return matchesSearch && matchesCourse && matchesStatus;
   });
 
@@ -156,7 +173,9 @@ const Dashboard = () => {
         <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between mb-8">
           <div>
             <h1 className="text-3xl font-bold mb-2">Study Buddy Dashboard</h1>
-            <p className="text-muted-foreground">Find and connect with study partners</p>
+            <p className="text-muted-foreground">
+              Find and connect with study partners
+            </p>
           </div>
           {currentUser?.isAdmin && (
             <Button variant="hero" className="mt-4 lg:mt-0">
@@ -177,15 +196,17 @@ const Dashboard = () => {
               className="pl-10"
             />
           </div>
-          
+
           <Select value={courseFilter} onValueChange={setCourseFilter}>
             <SelectTrigger className="w-full md:w-48">
               <SelectValue placeholder="Filter by course" />
             </SelectTrigger>
             <SelectContent>
               <SelectItem value="all-courses">All Courses</SelectItem>
-              {availableCourses.map(course => (
-                <SelectItem key={course} value={course}>{course}</SelectItem>
+              {availableCourses.map((course) => (
+                <SelectItem key={course} value={course}>
+                  {course}
+                </SelectItem>
               ))}
             </SelectContent>
           </Select>
@@ -215,10 +236,11 @@ const Dashboard = () => {
               <UserPlus className="h-12 w-12 text-muted-foreground mx-auto mb-4" />
               <h3 className="text-lg font-semibold mb-2">No students found</h3>
               <p className="text-muted-foreground mb-6">
-                {searchQuery || (courseFilter !== "all-courses") || (statusFilter !== "all-status")
+                {searchQuery ||
+                courseFilter !== "all-courses" ||
+                statusFilter !== "all-status"
                   ? "Try adjusting your filters to see more results."
-                  : "No students yet. Add your first student."
-                }
+                  : "No students yet. Add your first student."}
               </p>
               {currentUser?.isAdmin && (
                 <Button variant="hero">
@@ -240,61 +262,89 @@ const Dashboard = () => {
                     <th className="p-4 font-medium">Actions</th>
                   </tr>
                 </thead>
-                 <tbody>
+                <tbody>
                   {filteredStudents.map((profile) => (
-                    <tr key={profile.id} className="border-b border-border last:border-b-0 hover:bg-muted/50">
+                    <tr
+                      key={profile.id}
+                      className="border-b border-border last:border-b-0 hover:bg-muted/50"
+                    >
                       <td className="p-4">
                         <div className="flex items-center gap-3">
                           <Avatar>
-                            <AvatarImage src={profile.avatar || ''} />
+                            <AvatarImage src={profile.avatar || ""} />
                             <AvatarFallback>
-                              {(profile.full_name || 'N A').split(' ').map(n => n[0]).join('')}
+                              {(profile.full_name || "N A")
+                                .split(" ")
+                                .map((n) => n[0])
+                                .join("")}
                             </AvatarFallback>
                           </Avatar>
                           <div>
-                            <div className="font-medium">{profile.full_name || 'No Name'}</div>
-                            <div className="text-sm text-muted-foreground">{profile.year || 'No Year'}</div>
+                            <div className="font-medium">
+                              {profile.full_name || "No Name"}
+                            </div>
+                            <div className="text-sm text-muted-foreground">
+                              {profile.year || "No Year"}
+                            </div>
                           </div>
                         </div>
                       </td>
                       <td className="p-4 text-muted-foreground">
-                        {currentUser?.isAdmin ? 'Email hidden for privacy' : (profile.user_id === currentUser?.id ? currentUser?.email : 'Email hidden')}
+                        {currentUser?.isAdmin
+                          ? "Email hidden for privacy"
+                          : profile.user_id === currentUser?.id
+                          ? currentUser?.email
+                          : "Email hidden"}
                       </td>
-                      <td className="p-4">{profile.course || 'No Course'}</td>
+                      <td className="p-4">{profile.course || "No Course"}</td>
                       <td className="p-4">
                         <div className="flex flex-wrap gap-1">
-                          {(profile.interests || []).slice(0, 2).map((interest) => (
-                            <Badge key={interest} variant="secondary" className="text-xs">
-                              {interest}
-                            </Badge>
-                          ))}
+                          {(profile.interests || [])
+                            .slice(0, 2)
+                            .map((interest) => (
+                              <Badge
+                                key={interest}
+                                variant="secondary"
+                                className="text-xs"
+                              >
+                                {interest}
+                              </Badge>
+                            ))}
                           {(profile.interests || []).length > 2 && (
                             <Badge variant="outline" className="text-xs">
                               +{(profile.interests || []).length - 2}
                             </Badge>
                           )}
-                          {(!profile.interests || profile.interests.length === 0) && (
-                            <span className="text-xs text-muted-foreground">No interests</span>
+                          {(!profile.interests ||
+                            profile.interests.length === 0) && (
+                            <span className="text-xs text-muted-foreground">
+                              No interests
+                            </span>
                           )}
                         </div>
                       </td>
                       <td className="p-4">
-                        <Badge className={getStatusStyle(profile.status || 'offline')}>
-                          {getStatusText(profile.status || 'offline')}
+                        <Badge
+                          className={getStatusStyle(
+                            profile.status || "offline"
+                          )}
+                        >
+                          {getStatusText(profile.status || "offline")}
                         </Badge>
                       </td>
                       <td className="p-4">
                         <div className="flex items-center gap-2">
-                          <Button 
-                            variant="ghost" 
+                          <Button
+                            variant="ghost"
                             size="sm"
                             onClick={() => handleViewProfile(profile)}
                           >
                             <Eye className="h-4 w-4" />
                           </Button>
-                          {(currentUser?.isAdmin || profile.user_id === currentUser?.id) && (
-                            <Button 
-                              variant="ghost" 
+                          {(currentUser?.isAdmin ||
+                            profile.user_id === currentUser?.id) && (
+                            <Button
+                              variant="ghost"
                               size="sm"
                               onClick={() => handleEditProfile(profile)}
                             >
@@ -321,16 +371,28 @@ const Dashboard = () => {
               <div className="space-y-6">
                 <div className="flex items-center gap-4">
                   <Avatar className="h-20 w-20">
-                    <AvatarImage src={selectedProfile.avatar || ''} />
+                    <AvatarImage src={selectedProfile.avatar || ""} />
                     <AvatarFallback className="text-lg">
-                      {(selectedProfile.full_name || 'N A').split(' ').map(n => n[0]).join('')}
+                      {(selectedProfile.full_name || "N A")
+                        .split(" ")
+                        .map((n) => n[0])
+                        .join("")}
                     </AvatarFallback>
                   </Avatar>
                   <div>
-                    <h3 className="text-2xl font-semibold">{selectedProfile.full_name || 'No Name'}</h3>
-                    <p className="text-muted-foreground">{selectedProfile.course || 'No Course'} • {selectedProfile.year || 'No Year'}</p>
-                    <Badge className={getStatusStyle(selectedProfile.status || 'offline')}>
-                      {getStatusText(selectedProfile.status || 'offline')}
+                    <h3 className="text-2xl font-semibold">
+                      {selectedProfile.full_name || "No Name"}
+                    </h3>
+                    <p className="text-muted-foreground">
+                      {selectedProfile.course || "No Course"} •{" "}
+                      {selectedProfile.year || "No Year"}
+                    </p>
+                    <Badge
+                      className={getStatusStyle(
+                        selectedProfile.status || "offline"
+                      )}
+                    >
+                      {getStatusText(selectedProfile.status || "offline")}
                     </Badge>
                   </div>
                 </div>
@@ -339,10 +401,13 @@ const Dashboard = () => {
                   <div>
                     <h4 className="font-medium mb-2">Contact Information</h4>
                     <p className="text-sm text-muted-foreground">
-                      Email: {currentUser?.isAdmin ? 'Contact admin for email' : 'Email hidden for privacy'}
+                      {currentUser?.isAdmin
+                        ? "Contact admin for email"
+                        : "Email hidden for privacy"}
                     </p>
                     <p className="text-sm text-muted-foreground">
-                      Last Active: {formatLastActive(selectedProfile.last_active)}
+                      Last Active:{" "}
+                      {formatLastActive(selectedProfile.last_active)}
                     </p>
                     {selectedProfile.group_number && (
                       <p className="text-sm text-muted-foreground">
@@ -350,17 +415,24 @@ const Dashboard = () => {
                       </p>
                     )}
                   </div>
-                  
+
                   <div>
                     <h4 className="font-medium mb-2">Interests</h4>
                     <div className="flex flex-wrap gap-1">
                       {(selectedProfile.interests || []).map((interest) => (
-                        <Badge key={interest} variant="secondary" className="text-xs">
+                        <Badge
+                          key={interest}
+                          variant="secondary"
+                          className="text-xs"
+                        >
                           {interest}
                         </Badge>
                       ))}
-                      {(!selectedProfile.interests || selectedProfile.interests.length === 0) && (
-                        <span className="text-sm text-muted-foreground">No interests listed</span>
+                      {(!selectedProfile.interests ||
+                        selectedProfile.interests.length === 0) && (
+                        <span className="text-sm text-muted-foreground">
+                          No interests listed
+                        </span>
                       )}
                     </div>
                   </div>
@@ -369,7 +441,9 @@ const Dashboard = () => {
                 {selectedProfile.description && (
                   <div>
                     <h4 className="font-medium mb-2">About</h4>
-                    <p className="text-sm text-muted-foreground">{selectedProfile.description}</p>
+                    <p className="text-sm text-muted-foreground">
+                      {selectedProfile.description}
+                    </p>
                   </div>
                 )}
               </div>
