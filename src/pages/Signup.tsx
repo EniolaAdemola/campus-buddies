@@ -106,7 +106,7 @@ const Signup = () => {
         localStorage.setItem('isLoggedIn', 'true');
         
         console.log("User signed up:", userData);
-        navigate('/dashboard');
+        window.location.href = '/dashboard';
       }
     } catch (error) {
       console.error("Signup error:", error);

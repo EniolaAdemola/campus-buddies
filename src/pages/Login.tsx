@@ -73,7 +73,7 @@ const Login = () => {
           description: `Welcome back${userData.isAdmin ? ', Admin' : ''}!`,
         });
 
-        navigate('/dashboard');
+        window.location.href = '/dashboard';
       }
     } catch (error) {
       console.error("Login error:", error);
