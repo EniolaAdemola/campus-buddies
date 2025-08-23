@@ -12,14 +12,14 @@ import { useToast } from "@/hooks/use-toast";
 const Signup = () => {
   const navigate = useNavigate();
   const { toast } = useToast();
-  
+
   // Unique admin passwords
   const ADMIN_PASSWORDS = [
     "ADMIN2024_LISIO_001",
-    "ADMIN2024_LISIO_002", 
+    "ADMIN2024_LISIO_002",
     "ADMIN2024_LISIO_003",
     "ADMIN2024_LISIO_004",
-    "ADMIN2024_LISIO_005"
+    "ADMIN2024_LISIO_005",
   ];
 
   const [isAdmin, setIsAdmin] = useState(false);
@@ -29,22 +29,24 @@ const Signup = () => {
     fullName: "",
     email: "",
     password: "",
-    confirmPassword: ""
+    confirmPassword: "",
   });
 
-  const isAdminPasswordValid = isAdmin ? ADMIN_PASSWORDS.includes(adminPassword) : true;
+  const isAdminPasswordValid = isAdmin
+    ? ADMIN_PASSWORDS.includes(adminPassword)
+    : true;
   const isCreateButtonEnabled = !isAdmin || isAdminPasswordValid;
 
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     setFormData({
       ...formData,
-      [e.target.id]: e.target.value
+      [e.target.id]: e.target.value,
     });
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    
+
     if (formData.password !== formData.confirmPassword) {
       toast({
         title: "Password mismatch",
@@ -67,7 +69,7 @@ const Signup = () => {
 
     try {
       const redirectUrl = `${window.location.origin}/dashboard`;
-      
+
       const { data, error } = await supabase.auth.signUp({
         email: formData.email,
         password: formData.password,
@@ -75,9 +77,9 @@ const Signup = () => {
           emailRedirectTo: redirectUrl,
           data: {
             full_name: formData.fullName,
-            is_admin: isAdmin
-          }
-        }
+            is_admin: isAdmin,
+          },
+        },
       });
 
       if (error) {
@@ -94,19 +96,18 @@ const Signup = () => {
           title: "Account created successfully!",
           description: "Please check your email to confirm your account.",
         });
-        
+
         // Save user data to localStorage
         const userData = {
           id: data.user.id,
           email: data.user.email,
           fullName: formData.fullName,
-          isAdmin: isAdmin
+          isAdmin: isAdmin,
         };
-        localStorage.setItem('userData', JSON.stringify(userData));
-        localStorage.setItem('isLoggedIn', 'true');
-        
-        console.log("User signed up:", userData);
-        window.location.href = '/dashboard';
+        localStorage.setItem("userData", JSON.stringify(userData));
+        localStorage.setItem("isLoggedIn", "true");
+
+        window.location.href = "/dashboard";
       }
     } catch (error) {
       console.error("Signup error:", error);
@@ -124,7 +125,10 @@ const Signup = () => {
     <div className="min-h-screen flex items-center justify-center bg-background px-4">
       <div className="w-full max-w-md">
         <div className="text-center mb-8">
-          <Link to="/" className="inline-flex items-center gap-2 text-2xl font-bold text-primary">
+          <Link
+            to="/"
+            className="inline-flex items-center gap-2 text-2xl font-bold text-primary"
+          >
             <BookOpen className="h-8 w-8" />
             LisioBuddy
           </Link>
@@ -185,8 +189,8 @@ const Signup = () => {
             </div>
 
             <div className="flex items-center space-x-2">
-              <Checkbox 
-                id="isAdmin" 
+              <Checkbox
+                id="isAdmin"
                 checked={isAdmin}
                 onCheckedChange={(checked) => {
                   setIsAdmin(checked as boolean);
@@ -210,18 +214,24 @@ const Signup = () => {
                   value={adminPassword}
                   onChange={(e) => setAdminPassword(e.target.value)}
                   required={isAdmin}
-                  className={!isAdminPasswordValid && adminPassword ? "border-destructive" : ""}
+                  className={
+                    !isAdminPasswordValid && adminPassword
+                      ? "border-destructive"
+                      : ""
+                  }
                 />
                 {!isAdminPasswordValid && adminPassword && (
-                  <p className="text-sm text-destructive">Invalid admin password</p>
+                  <p className="text-sm text-destructive">
+                    Invalid admin password
+                  </p>
                 )}
               </div>
             )}
 
-            <Button 
-              type="submit" 
-              variant="hero" 
-              size="lg" 
+            <Button
+              type="submit"
+              variant="hero"
+              size="lg"
               className="w-full"
               disabled={!isCreateButtonEnabled || loading}
             >
@@ -230,16 +240,23 @@ const Signup = () => {
 
             <div className="text-xs text-center text-muted-foreground">
               By signing up, you agree to our{" "}
-              <a href="#" className="text-primary hover:underline">Terms of Service</a>
-              {" "}and{" "}
-              <a href="#" className="text-primary hover:underline">Privacy Policy</a>
+              <a href="#" className="text-primary hover:underline">
+                Terms of Service
+              </a>{" "}
+              and{" "}
+              <a href="#" className="text-primary hover:underline">
+                Privacy Policy
+              </a>
             </div>
           </form>
 
           <div className="mt-6 text-center">
             <p className="text-sm text-muted-foreground">
               Already have an account?{" "}
-              <Link to="/login" className="font-medium text-primary hover:underline">
+              <Link
+                to="/login"
+                className="font-medium text-primary hover:underline"
+              >
                 Sign in
               </Link>
             </p>

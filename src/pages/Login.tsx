@@ -14,13 +14,13 @@ const Login = () => {
   const [loading, setLoading] = useState(false);
   const [formData, setFormData] = useState({
     email: "",
-    password: ""
+    password: "",
   });
 
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     setFormData({
       ...formData,
-      [e.target.id]: e.target.value
+      [e.target.id]: e.target.value,
     });
   };
 
@@ -46,34 +46,28 @@ const Login = () => {
       if (data.user) {
         // Fetch user profile to get admin status
         const { data: profile, error: profileError } = await supabase
-          .from('profiles')
-          .select('*')
-          .eq('user_id', data.user.id)
+          .from("profiles")
+          .select("*")
+          .eq("user_id", data.user.id)
           .single();
 
         const userData = {
           id: data.user.id,
           email: data.user.email,
-          fullName: profile?.full_name || '',
-          isAdmin: profile?.is_admin || false
+          fullName: profile?.full_name || "",
+          isAdmin: profile?.is_admin || false,
         };
 
         // Save user data to localStorage
-        localStorage.setItem('userData', JSON.stringify(userData));
-        localStorage.setItem('isLoggedIn', 'true');
-        
-        // Console log user details including admin status
-        console.log("User logged in:", {
-          ...userData,
-          sessionData: data.session
-        });
+        localStorage.setItem("userData", JSON.stringify(userData));
+        localStorage.setItem("isLoggedIn", "true");
 
         toast({
           title: "Login successful!",
-          description: `Welcome back${userData.isAdmin ? ', Admin' : ''}!`,
+          description: `Welcome back${userData.isAdmin ? ", Admin" : ""}!`,
         });
 
-        window.location.href = '/dashboard';
+        window.location.href = "/dashboard";
       }
     } catch (error) {
       console.error("Login error:", error);
@@ -91,7 +85,10 @@ const Login = () => {
     <div className="min-h-screen flex items-center justify-center bg-background px-4">
       <div className="w-full max-w-md">
         <div className="text-center mb-8">
-          <Link to="/" className="inline-flex items-center gap-2 text-2xl font-bold text-primary">
+          <Link
+            to="/"
+            className="inline-flex items-center gap-2 text-2xl font-bold text-primary"
+          >
             <BookOpen className="h-8 w-8" />
             LisioBuddy
           </Link>
@@ -127,7 +124,13 @@ const Login = () => {
               />
             </div>
 
-            <Button type="submit" variant="hero" size="lg" className="w-full" disabled={loading}>
+            <Button
+              type="submit"
+              variant="hero"
+              size="lg"
+              className="w-full"
+              disabled={loading}
+            >
               {loading ? "Signing In..." : "Sign In"}
             </Button>
 
@@ -136,11 +139,18 @@ const Login = () => {
                 <span className="w-full border-t border-border" />
               </div>
               <div className="relative flex justify-center text-xs uppercase">
-                <span className="bg-background px-2 text-muted-foreground">Or continue with</span>
+                <span className="bg-background px-2 text-muted-foreground">
+                  Or continue with
+                </span>
               </div>
             </div>
 
-            <Button type="button" variant="outline" size="lg" className="w-full">
+            <Button
+              type="button"
+              variant="outline"
+              size="lg"
+              className="w-full"
+            >
               Continue with Google
             </Button>
           </form>
@@ -148,7 +158,10 @@ const Login = () => {
           <div className="mt-6 text-center">
             <p className="text-sm text-muted-foreground">
               Don't have an account?{" "}
-              <Link to="/signup" className="font-medium text-primary hover:underline">
+              <Link
+                to="/signup"
+                className="font-medium text-primary hover:underline"
+              >
                 Sign up
               </Link>
             </p>

@@ -1,10 +1,21 @@
 import { useState, useEffect } from "react";
-import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 import { Badge } from "@/components/ui/badge";
 import { X } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
@@ -37,17 +48,19 @@ const ProfileModal = ({ open, onOpenChange }: ProfileModalProps) => {
 
   const loadUserProfile = async () => {
     try {
-      const { data: { user } } = await supabase.auth.getUser();
+      const {
+        data: { user },
+      } = await supabase.auth.getUser();
       if (!user) return;
 
       const { data: profile, error } = await supabase
-        .from('profiles')
-        .select('*')
-        .eq('user_id', user.id)
+        .from("profiles")
+        .select("*")
+        .eq("user_id", user.id)
         .single();
 
-      if (error && error.code !== 'PGRST116') {
-        console.error('Error loading profile:', error);
+      if (error && error.code !== "PGRST116") {
+        console.error("Error loading profile:", error);
         return;
       }
 
@@ -63,28 +76,31 @@ const ProfileModal = ({ open, onOpenChange }: ProfileModalProps) => {
         });
       }
     } catch (error) {
-      console.error('Error loading profile:', error);
+      console.error("Error loading profile:", error);
     }
   };
 
   const handleInputChange = (field: string, value: string) => {
-    setFormData(prev => ({ ...prev, [field]: value }));
+    setFormData((prev) => ({ ...prev, [field]: value }));
   };
 
   const addInterest = () => {
-    if (newInterest.trim() && !formData.interests.includes(newInterest.trim())) {
-      setFormData(prev => ({
+    if (
+      newInterest.trim() &&
+      !formData.interests.includes(newInterest.trim())
+    ) {
+      setFormData((prev) => ({
         ...prev,
-        interests: [...prev.interests, newInterest.trim()]
+        interests: [...prev.interests, newInterest.trim()],
       }));
       setNewInterest("");
     }
   };
 
   const removeInterest = (interest: string) => {
-    setFormData(prev => ({
+    setFormData((prev) => ({
       ...prev,
-      interests: prev.interests.filter(i => i !== interest)
+      interests: prev.interests.filter((i) => i !== interest),
     }));
   };
 
@@ -93,7 +109,9 @@ const ProfileModal = ({ open, onOpenChange }: ProfileModalProps) => {
     setLoading(true);
 
     try {
-      const { data: { user } } = await supabase.auth.getUser();
+      const {
+        data: { user },
+      } = await supabase.auth.getUser();
       if (!user) {
         toast({
           title: "Error",
@@ -109,27 +127,31 @@ const ProfileModal = ({ open, onOpenChange }: ProfileModalProps) => {
         interests: formData.interests,
         status: formData.status,
         year: formData.year,
-        group_number: formData.group_number ? parseInt(formData.group_number) : null,
+        group_number: formData.group_number
+          ? parseInt(formData.group_number)
+          : null,
         description: formData.description,
         last_active: new Date().toISOString(),
       };
 
       const { error } = await supabase
-        .from('profiles')
+        .from("profiles")
         .update(updateData)
-        .eq('user_id', user.id);
+        .eq("user_id", user.id);
 
       if (error) {
         throw error;
       }
 
       // Update localStorage userData
-      const currentUserData = JSON.parse(localStorage.getItem('userData') || '{}');
+      const currentUserData = JSON.parse(
+        localStorage.getItem("userData") || "{}"
+      );
       const updatedUserData = {
         ...currentUserData,
-        fullName: formData.full_name
+        fullName: formData.full_name,
       };
-      localStorage.setItem('userData', JSON.stringify(updatedUserData));
+      localStorage.setItem("userData", JSON.stringify(updatedUserData));
 
       toast({
         title: "Success",
@@ -138,7 +160,7 @@ const ProfileModal = ({ open, onOpenChange }: ProfileModalProps) => {
 
       onOpenChange(false);
     } catch (error) {
-      console.error('Error updating profile:', error);
+      console.error("Error updating profile:", error);
       toast({
         title: "Error",
         description: "Failed to update profile. Please try again.",
@@ -163,7 +185,7 @@ const ProfileModal = ({ open, onOpenChange }: ProfileModalProps) => {
               <Input
                 id="full_name"
                 value={formData.full_name}
-                onChange={(e) => handleInputChange('full_name', e.target.value)}
+                onChange={(e) => handleInputChange("full_name", e.target.value)}
                 placeholder="Enter your full name"
                 required
               />
@@ -171,35 +193,50 @@ const ProfileModal = ({ open, onOpenChange }: ProfileModalProps) => {
 
             <div className="space-y-2">
               <Label htmlFor="course">Course</Label>
-              <Input
-                id="course"
+              <Select
                 value={formData.course}
-                onChange={(e) => handleInputChange('course', e.target.value)}
-                placeholder="e.g., FGD"
-              />
+                onValueChange={(value) => handleInputChange("course", value)}
+              >
+                <SelectTrigger id="course">
+                  <SelectValue placeholder="Select a course" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="FGD">FGD</SelectItem>
+                  <SelectItem value="GenAI">GenAI</SelectItem>
+                  <SelectItem value="DigitalMarketing">
+                    DigitalMarketing
+                  </SelectItem>
+                </SelectContent>
+              </Select>
             </div>
           </div>
 
           <div className="grid grid-cols-2 gap-4">
             <div className="space-y-2">
               <Label htmlFor="year">Academic Year</Label>
-              <Select value={formData.year} onValueChange={(value) => handleInputChange('year', value)}>
+              <Select
+                value={formData.year}
+                onValueChange={(value) => handleInputChange("year", value)}
+              >
                 <SelectTrigger>
-                  <SelectValue placeholder="Select year" />
+                  <SelectValue placeholder="Select academic year" />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="Freshman">Freshman</SelectItem>
-                  <SelectItem value="Sophomore">Sophomore</SelectItem>
-                  <SelectItem value="Junior">Junior</SelectItem>
-                  <SelectItem value="Senior">Senior</SelectItem>
-                  <SelectItem value="Graduate">Graduate</SelectItem>
+                  <SelectItem value="2024/2025">2024/2025</SelectItem>
+                  <SelectItem value="2025/2026">2025/2026</SelectItem>
+                  <SelectItem value="2026/2027">2026/2027</SelectItem>
+                  <SelectItem value="2027/2028">2027/2028</SelectItem>
+                  <SelectItem value="2028/2029">2028/2029</SelectItem>
                 </SelectContent>
               </Select>
             </div>
 
             <div className="space-y-2">
               <Label htmlFor="status">Status</Label>
-              <Select value={formData.status} onValueChange={(value) => handleInputChange('status', value)}>
+              <Select
+                value={formData.status}
+                onValueChange={(value) => handleInputChange("status", value)}
+              >
                 <SelectTrigger>
                   <SelectValue placeholder="Select status" />
                 </SelectTrigger>
@@ -218,7 +255,9 @@ const ProfileModal = ({ open, onOpenChange }: ProfileModalProps) => {
               id="group_number"
               type="number"
               value={formData.group_number}
-              onChange={(e) => handleInputChange('group_number', e.target.value)}
+              onChange={(e) =>
+                handleInputChange("group_number", e.target.value)
+              }
               placeholder="Enter group number"
             />
           </div>
@@ -230,7 +269,9 @@ const ProfileModal = ({ open, onOpenChange }: ProfileModalProps) => {
                 value={newInterest}
                 onChange={(e) => setNewInterest(e.target.value)}
                 placeholder="Add an interest"
-                onKeyPress={(e) => e.key === 'Enter' && (e.preventDefault(), addInterest())}
+                onKeyPress={(e) =>
+                  e.key === "Enter" && (e.preventDefault(), addInterest())
+                }
               />
               <Button type="button" onClick={addInterest} variant="outline">
                 Add
@@ -238,7 +279,11 @@ const ProfileModal = ({ open, onOpenChange }: ProfileModalProps) => {
             </div>
             <div className="flex flex-wrap gap-2 mt-2">
               {formData.interests.map((interest) => (
-                <Badge key={interest} variant="secondary" className="flex items-center gap-1">
+                <Badge
+                  key={interest}
+                  variant="secondary"
+                  className="flex items-center gap-1"
+                >
                   {interest}
                   <X
                     className="h-3 w-3 cursor-pointer"
@@ -254,14 +299,18 @@ const ProfileModal = ({ open, onOpenChange }: ProfileModalProps) => {
             <Textarea
               id="description"
               value={formData.description}
-              onChange={(e) => handleInputChange('description', e.target.value)}
+              onChange={(e) => handleInputChange("description", e.target.value)}
               placeholder="Tell us about yourself and what you're looking for in study partners..."
               rows={4}
             />
           </div>
 
           <div className="flex justify-end gap-3">
-            <Button type="button" variant="outline" onClick={() => onOpenChange(false)}>
+            <Button
+              type="button"
+              variant="outline"
+              onClick={() => onOpenChange(false)}
+            >
               Cancel
             </Button>
             <Button type="submit" disabled={loading}>
