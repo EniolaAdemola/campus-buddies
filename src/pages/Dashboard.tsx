@@ -1,52 +1,40 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Badge } from "@/components/ui/badge";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Search, Filter, Plus, Eye, Edit, UserPlus } from "lucide-react";
+import { supabase } from "@/integrations/supabase/client";
+import { useToast } from "@/hooks/use-toast";
 
-// Mock student data
-const mockStudents = [
-  {
-    id: "SBF-0015",
-    name: "Alice Johnson",
-    email: "alice.johnson@university.edu",
-    course: "Computer Science",
-    interests: ["React", "Machine Learning", "Data Structures"],
-    status: "available",
-    avatar: "",
-    year: "Junior",
-    lastActive: "2 hours ago"
-  },
-  {
-    id: "SBF-0028",
-    name: "Marcus Chen",
-    email: "marcus.chen@university.edu", 
-    course: "Data Science",
-    interests: ["Python", "Statistics", "AI"],
-    status: "busy",
-    avatar: "",
-    year: "Senior",
-    lastActive: "1 day ago"
-  },
-  {
-    id: "SBF-0042",
-    name: "Sarah Williams",
-    email: "sarah.w@university.edu",
-    course: "Mathematics",
-    interests: ["Calculus", "Linear Algebra", "Statistics"],
-    status: "offline",
-    avatar: "",
-    year: "Sophomore", 
-    lastActive: "3 days ago"
-  }
-];
+interface Profile {
+  id: string;
+  user_id: string;
+  full_name: string | null;
+  course: string | null;
+  interests: string[] | null;
+  status: string | null;
+  avatar: string | null;
+  year: string | null;
+  last_active: string | null;
+  group_number: number | null;
+  description: string | null;
+  is_admin: boolean;
+}
 
 const Dashboard = () => {
   const [searchQuery, setSearchQuery] = useState("");
   const [courseFilter, setCourseFilter] = useState("all-courses");
   const [statusFilter, setStatusFilter] = useState("all-status");
+  const [profiles, setProfiles] = useState<Profile[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [currentUser, setCurrentUser] = useState<any>(null);
+  const [selectedProfile, setSelectedProfile] = useState<Profile | null>(null);
+  const [showDetailModal, setShowDetailModal] = useState(false);
+  const [availableCourses, setAvailableCourses] = useState<string[]>([]);
+  const { toast } = useToast();
 
   const getStatusStyle = (status: string) => {
     switch (status) {
@@ -70,14 +58,93 @@ const Dashboard = () => {
     }
   };
 
-  const filteredStudents = mockStudents.filter(student => {
-    const matchesSearch = student.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
-                         student.course.toLowerCase().includes(searchQuery.toLowerCase()) ||
-                         student.interests.some(interest => 
+  useEffect(() => {
+    loadCurrentUser();
+    loadProfiles();
+  }, []);
+
+  const loadCurrentUser = async () => {
+    const userData = JSON.parse(localStorage.getItem('userData') || '{}');
+    setCurrentUser(userData);
+  };
+
+  const loadProfiles = async () => {
+    try {
+      setLoading(true);
+      const { data, error } = await supabase
+        .from('profiles')
+        .select('*')
+        .order('full_name');
+
+      if (error) {
+        console.error('Error fetching profiles:', error);
+        toast({
+          title: "Error",
+          description: "Failed to load student profiles",
+          variant: "destructive"
+        });
+        return;
+      }
+
+      setProfiles(data || []);
+      
+      // Extract unique courses for filter
+      const courses = [...new Set(data?.map(p => p.course).filter(Boolean) || [])];
+      setAvailableCourses(courses);
+    } catch (error) {
+      console.error('Error:', error);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleViewProfile = (profile: Profile) => {
+    setSelectedProfile(profile);
+    setShowDetailModal(true);
+  };
+
+  const handleEditProfile = (profile: Profile) => {
+    // Only admins can edit other profiles, users can only edit their own
+    if (!currentUser?.isAdmin && profile.user_id !== currentUser?.id) {
+      toast({
+        title: "Access Denied",
+        description: "You can only edit your own profile",
+        variant: "destructive"
+      });
+      return;
+    }
+    // TODO: Implement edit functionality
+    toast({
+      title: "Edit Profile",
+      description: "Edit functionality will be implemented soon"
+    });
+  };
+
+  const formatLastActive = (lastActive: string | null) => {
+    if (!lastActive) return "Never";
+    const date = new Date(lastActive);
+    const now = new Date();
+    const diffInHours = Math.floor((now.getTime() - date.getTime()) / (1000 * 60 * 60));
+    
+    if (diffInHours < 1) return "Just now";
+    if (diffInHours < 24) return `${diffInHours} hours ago`;
+    const diffInDays = Math.floor(diffInHours / 24);
+    if (diffInDays === 1) return "1 day ago";
+    return `${diffInDays} days ago`;
+  };
+
+  const filteredStudents = profiles.filter(profile => {
+    const name = profile.full_name || '';
+    const course = profile.course || '';
+    const interests = profile.interests || [];
+    
+    const matchesSearch = name.toLowerCase().includes(searchQuery.toLowerCase()) ||
+                         course.toLowerCase().includes(searchQuery.toLowerCase()) ||
+                         interests.some(interest => 
                            interest.toLowerCase().includes(searchQuery.toLowerCase())
                          );
-    const matchesCourse = courseFilter === "all-courses" || student.course === courseFilter;
-    const matchesStatus = statusFilter === "all-status" || student.status === statusFilter;
+    const matchesCourse = courseFilter === "all-courses" || course === courseFilter;
+    const matchesStatus = statusFilter === "all-status" || profile.status === statusFilter;
     
     return matchesSearch && matchesCourse && matchesStatus;
   });
@@ -91,10 +158,12 @@ const Dashboard = () => {
             <h1 className="text-3xl font-bold mb-2">Study Buddy Dashboard</h1>
             <p className="text-muted-foreground">Find and connect with study partners</p>
           </div>
-          <Button variant="hero" className="mt-4 lg:mt-0">
-            <Plus className="h-4 w-4 mr-2" />
-            Add Student
-          </Button>
+          {currentUser?.isAdmin && (
+            <Button variant="hero" className="mt-4 lg:mt-0">
+              <Plus className="h-4 w-4 mr-2" />
+              Add Student
+            </Button>
+          )}
         </div>
 
         {/* Filters */}
@@ -115,9 +184,9 @@ const Dashboard = () => {
             </SelectTrigger>
             <SelectContent>
               <SelectItem value="all-courses">All Courses</SelectItem>
-              <SelectItem value="Computer Science">Computer Science</SelectItem>
-              <SelectItem value="Data Science">Data Science</SelectItem>
-              <SelectItem value="Mathematics">Mathematics</SelectItem>
+              {availableCourses.map(course => (
+                <SelectItem key={course} value={course}>{course}</SelectItem>
+              ))}
             </SelectContent>
           </Select>
 
@@ -136,7 +205,12 @@ const Dashboard = () => {
 
         {/* Students Table/Cards */}
         <div className="bg-card rounded-lg border border-border shadow-study">
-          {filteredStudents.length === 0 ? (
+          {loading ? (
+            <div className="text-center py-16">
+              <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary mx-auto mb-4"></div>
+              <p className="text-muted-foreground">Loading students...</p>
+            </div>
+          ) : filteredStudents.length === 0 ? (
             <div className="text-center py-16">
               <UserPlus className="h-12 w-12 text-muted-foreground mx-auto mb-4" />
               <h3 className="text-lg font-semibold mb-2">No students found</h3>
@@ -146,10 +220,12 @@ const Dashboard = () => {
                   : "No students yet. Add your first student."
                 }
               </p>
-              <Button variant="hero">
-                <Plus className="h-4 w-4 mr-2" />
-                Add Student
-              </Button>
+              {currentUser?.isAdmin && (
+                <Button variant="hero">
+                  <Plus className="h-4 w-4 mr-2" />
+                  Add Student
+                </Button>
+              )}
             </div>
           ) : (
             <div className="overflow-x-auto">
@@ -164,52 +240,67 @@ const Dashboard = () => {
                     <th className="p-4 font-medium">Actions</th>
                   </tr>
                 </thead>
-                <tbody>
-                  {filteredStudents.map((student) => (
-                    <tr key={student.id} className="border-b border-border last:border-b-0 hover:bg-muted/50">
+                 <tbody>
+                  {filteredStudents.map((profile) => (
+                    <tr key={profile.id} className="border-b border-border last:border-b-0 hover:bg-muted/50">
                       <td className="p-4">
                         <div className="flex items-center gap-3">
                           <Avatar>
-                            <AvatarImage src={student.avatar} />
+                            <AvatarImage src={profile.avatar || ''} />
                             <AvatarFallback>
-                              {student.name.split(' ').map(n => n[0]).join('')}
+                              {(profile.full_name || 'N A').split(' ').map(n => n[0]).join('')}
                             </AvatarFallback>
                           </Avatar>
                           <div>
-                            <div className="font-medium">{student.name}</div>
-                            <div className="text-sm text-muted-foreground">{student.id}</div>
+                            <div className="font-medium">{profile.full_name || 'No Name'}</div>
+                            <div className="text-sm text-muted-foreground">{profile.year || 'No Year'}</div>
                           </div>
                         </div>
                       </td>
-                      <td className="p-4 text-muted-foreground">{student.email}</td>
-                      <td className="p-4">{student.course}</td>
+                      <td className="p-4 text-muted-foreground">
+                        {currentUser?.isAdmin ? 'Email hidden for privacy' : (profile.user_id === currentUser?.id ? currentUser?.email : 'Email hidden')}
+                      </td>
+                      <td className="p-4">{profile.course || 'No Course'}</td>
                       <td className="p-4">
                         <div className="flex flex-wrap gap-1">
-                          {student.interests.slice(0, 2).map((interest) => (
+                          {(profile.interests || []).slice(0, 2).map((interest) => (
                             <Badge key={interest} variant="secondary" className="text-xs">
                               {interest}
                             </Badge>
                           ))}
-                          {student.interests.length > 2 && (
+                          {(profile.interests || []).length > 2 && (
                             <Badge variant="outline" className="text-xs">
-                              +{student.interests.length - 2}
+                              +{(profile.interests || []).length - 2}
                             </Badge>
+                          )}
+                          {(!profile.interests || profile.interests.length === 0) && (
+                            <span className="text-xs text-muted-foreground">No interests</span>
                           )}
                         </div>
                       </td>
                       <td className="p-4">
-                        <Badge className={getStatusStyle(student.status)}>
-                          {getStatusText(student.status)}
+                        <Badge className={getStatusStyle(profile.status || 'offline')}>
+                          {getStatusText(profile.status || 'offline')}
                         </Badge>
                       </td>
                       <td className="p-4">
                         <div className="flex items-center gap-2">
-                          <Button variant="ghost" size="sm">
+                          <Button 
+                            variant="ghost" 
+                            size="sm"
+                            onClick={() => handleViewProfile(profile)}
+                          >
                             <Eye className="h-4 w-4" />
                           </Button>
-                          <Button variant="ghost" size="sm">
-                            <Edit className="h-4 w-4" />
-                          </Button>
+                          {(currentUser?.isAdmin || profile.user_id === currentUser?.id) && (
+                            <Button 
+                              variant="ghost" 
+                              size="sm"
+                              onClick={() => handleEditProfile(profile)}
+                            >
+                              <Edit className="h-4 w-4" />
+                            </Button>
+                          )}
                         </div>
                       </td>
                     </tr>
@@ -219,6 +310,72 @@ const Dashboard = () => {
             </div>
           )}
         </div>
+
+        {/* Student Detail Modal */}
+        <Dialog open={showDetailModal} onOpenChange={setShowDetailModal}>
+          <DialogContent className="max-w-2xl">
+            <DialogHeader>
+              <DialogTitle>Student Profile</DialogTitle>
+            </DialogHeader>
+            {selectedProfile && (
+              <div className="space-y-6">
+                <div className="flex items-center gap-4">
+                  <Avatar className="h-20 w-20">
+                    <AvatarImage src={selectedProfile.avatar || ''} />
+                    <AvatarFallback className="text-lg">
+                      {(selectedProfile.full_name || 'N A').split(' ').map(n => n[0]).join('')}
+                    </AvatarFallback>
+                  </Avatar>
+                  <div>
+                    <h3 className="text-2xl font-semibold">{selectedProfile.full_name || 'No Name'}</h3>
+                    <p className="text-muted-foreground">{selectedProfile.course || 'No Course'} • {selectedProfile.year || 'No Year'}</p>
+                    <Badge className={getStatusStyle(selectedProfile.status || 'offline')}>
+                      {getStatusText(selectedProfile.status || 'offline')}
+                    </Badge>
+                  </div>
+                </div>
+
+                <div className="grid grid-cols-2 gap-4">
+                  <div>
+                    <h4 className="font-medium mb-2">Contact Information</h4>
+                    <p className="text-sm text-muted-foreground">
+                      Email: {currentUser?.isAdmin ? 'Contact admin for email' : 'Email hidden for privacy'}
+                    </p>
+                    <p className="text-sm text-muted-foreground">
+                      Last Active: {formatLastActive(selectedProfile.last_active)}
+                    </p>
+                    {selectedProfile.group_number && (
+                      <p className="text-sm text-muted-foreground">
+                        Group: {selectedProfile.group_number}
+                      </p>
+                    )}
+                  </div>
+                  
+                  <div>
+                    <h4 className="font-medium mb-2">Interests</h4>
+                    <div className="flex flex-wrap gap-1">
+                      {(selectedProfile.interests || []).map((interest) => (
+                        <Badge key={interest} variant="secondary" className="text-xs">
+                          {interest}
+                        </Badge>
+                      ))}
+                      {(!selectedProfile.interests || selectedProfile.interests.length === 0) && (
+                        <span className="text-sm text-muted-foreground">No interests listed</span>
+                      )}
+                    </div>
+                  </div>
+                </div>
+
+                {selectedProfile.description && (
+                  <div>
+                    <h4 className="font-medium mb-2">About</h4>
+                    <p className="text-sm text-muted-foreground">{selectedProfile.description}</p>
+                  </div>
+                )}
+              </div>
+            )}
+          </DialogContent>
+        </Dialog>
       </div>
     </div>
   );
