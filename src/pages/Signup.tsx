@@ -103,6 +103,7 @@ const Signup = () => {
           isAdmin: isAdmin
         };
         localStorage.setItem('userData', JSON.stringify(userData));
+        localStorage.setItem('isLoggedIn', 'true');
         
         console.log("User signed up:", userData);
         navigate('/dashboard');

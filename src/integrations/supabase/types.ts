@@ -16,28 +16,52 @@ export type Database = {
     Tables: {
       profiles: {
         Row: {
+          avatar: string | null
+          course: string | null
           created_at: string
+          description: string | null
           full_name: string | null
+          group_number: number | null
           id: string
+          interests: string[] | null
           is_admin: boolean
+          last_active: string | null
+          status: string | null
           updated_at: string
           user_id: string
+          year: string | null
         }
         Insert: {
+          avatar?: string | null
+          course?: string | null
           created_at?: string
+          description?: string | null
           full_name?: string | null
+          group_number?: number | null
           id?: string
+          interests?: string[] | null
           is_admin?: boolean
+          last_active?: string | null
+          status?: string | null
           updated_at?: string
           user_id: string
+          year?: string | null
         }
         Update: {
+          avatar?: string | null
+          course?: string | null
           created_at?: string
+          description?: string | null
           full_name?: string | null
+          group_number?: number | null
           id?: string
+          interests?: string[] | null
           is_admin?: boolean
+          last_active?: string | null
+          status?: string | null
           updated_at?: string
           user_id?: string
+          year?: string | null
         }
         Relationships: []
       }

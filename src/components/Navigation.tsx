@@ -1,8 +1,45 @@
 import { Link } from "react-router-dom";
 import { Button } from "@/components/ui/button";
+import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import { BookOpen } from "lucide-react";
+import { useState, useEffect } from "react";
+import ProfileModal from "./ProfileModal";
 
 const Navigation = () => {
+  const [isLoggedIn, setIsLoggedIn] = useState(false);
+  const [userData, setUserData] = useState<any>(null);
+  const [showProfileModal, setShowProfileModal] = useState(false);
+
+  useEffect(() => {
+    const checkLoginStatus = () => {
+      const loggedIn = localStorage.getItem('isLoggedIn') === 'true';
+      const user = localStorage.getItem('userData');
+      setIsLoggedIn(loggedIn);
+      if (user) {
+        setUserData(JSON.parse(user));
+      }
+    };
+
+    checkLoginStatus();
+  }, []);
+
+  const getInitials = (name: string) => {
+    if (!name) return 'U';
+    const names = name.split(' ');
+    if (names.length >= 2) {
+      return (names[0][0] + names[names.length - 1][0]).toUpperCase();
+    }
+    return name[0].toUpperCase();
+  };
+
+  const handleLogout = () => {
+    localStorage.removeItem('isLoggedIn');
+    localStorage.removeItem('userData');
+    setIsLoggedIn(false);
+    setUserData(null);
+    window.location.href = '/';
+  };
+
   return (
     <nav className="sticky top-0 z-50 bg-card/95 backdrop-blur-sm border-b border-border">
       <div className="container mx-auto px-4 py-4">
@@ -32,17 +69,36 @@ const Navigation = () => {
             </Link>
           </div>
 
-          {/* Auth Buttons */}
+          {/* Auth Buttons / Profile */}
           <div className="flex items-center gap-3">
-            <Button variant="ghost" asChild>
-              <Link to="/login">Login</Link>
-            </Button>
-            <Button variant="hero" asChild>
-              <Link to="/signup">Sign Up</Link>
-            </Button>
+            {isLoggedIn && userData ? (
+              <div className="flex items-center gap-3">
+                <Avatar 
+                  className="h-8 w-8 cursor-pointer hover:ring-2 hover:ring-primary/20 transition-all"
+                  onClick={() => setShowProfileModal(true)}
+                >
+                  <AvatarFallback className="bg-primary text-primary-foreground text-sm font-semibold">
+                    {getInitials(userData.fullName || userData.email)}
+                  </AvatarFallback>
+                </Avatar>
+                <Button variant="ghost" onClick={handleLogout}>
+                  Logout
+                </Button>
+              </div>
+            ) : (
+              <>
+                <Button variant="ghost" asChild>
+                  <Link to="/login">Login</Link>
+                </Button>
+                <Button variant="hero" asChild>
+                  <Link to="/signup">Sign Up</Link>
+                </Button>
+              </>
+            )}
           </div>
         </div>
       </div>
+      <ProfileModal open={showProfileModal} onOpenChange={setShowProfileModal} />
     </nav>
   );
 };

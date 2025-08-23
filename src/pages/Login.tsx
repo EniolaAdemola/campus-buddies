@@ -60,6 +60,7 @@ const Login = () => {
 
         // Save user data to localStorage
         localStorage.setItem('userData', JSON.stringify(userData));
+        localStorage.setItem('isLoggedIn', 'true');
         
         // Console log user details including admin status
         console.log("User logged in:", {
