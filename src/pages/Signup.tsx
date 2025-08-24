@@ -68,7 +68,7 @@ const Signup = () => {
     setLoading(true);
 
     try {
-      const redirectUrl = `${window.location.origin}/dashboard`;
+      const redirectUrl = `${window.location.origin}/`;
 
       const { data, error } = await supabase.auth.signUp({
         email: formData.email,
