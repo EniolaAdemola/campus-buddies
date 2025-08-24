@@ -44,27 +44,9 @@ const Login = () => {
       }
 
       if (data.user) {
-        // Fetch user profile to get admin status
-        const { data: profile, error: profileError } = await supabase
-          .from("profiles")
-          .select("*")
-          .eq("user_id", data.user.id)
-          .single();
-
-        const userData = {
-          id: data.user.id,
-          email: data.user.email,
-          fullName: profile?.full_name || "",
-          isAdmin: profile?.is_admin || false,
-        };
-
-        // Save user data to localStorage
-        localStorage.setItem("userData", JSON.stringify(userData));
-        localStorage.setItem("isLoggedIn", "true");
-
         toast({
           title: "Login successful!",
-          description: `Welcome back${userData.isAdmin ? ", Admin" : ""}!`,
+          description: "Welcome back!",
         });
 
         window.location.href = "/";

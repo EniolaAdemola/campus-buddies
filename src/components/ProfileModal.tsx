@@ -143,15 +143,7 @@ const ProfileModal = ({ open, onOpenChange }: ProfileModalProps) => {
         throw error;
       }
 
-      // Update localStorage userData
-      const currentUserData = JSON.parse(
-        localStorage.getItem("userData") || "{}"
-      );
-      const updatedUserData = {
-        ...currentUserData,
-        fullName: formData.full_name,
-      };
-      localStorage.setItem("userData", JSON.stringify(updatedUserData));
+      // Profile updated successfully
 
       toast({
         title: "Success",

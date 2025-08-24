@@ -32,7 +32,6 @@ interface Profile {
   last_active: string | null;
   group_number: number | null;
   description: string | null;
-  is_admin: boolean;
 }
 
 const Dashboard = () => {
@@ -42,6 +41,7 @@ const Dashboard = () => {
   const [profiles, setProfiles] = useState<Profile[]>([]);
   const [loading, setLoading] = useState(true);
   const [currentUser, setCurrentUser] = useState<any>(null);
+  const [userRole, setUserRole] = useState<string | null>(null);
   const [selectedProfile, setSelectedProfile] = useState<Profile | null>(null);
   const [showDetailModal, setShowDetailModal] = useState(false);
   const [availableCourses, setAvailableCourses] = useState<string[]>([]);
@@ -75,8 +75,19 @@ const Dashboard = () => {
   }, []);
 
   const loadCurrentUser = async () => {
-    const userData = JSON.parse(localStorage.getItem("userData") || "{}");
-    setCurrentUser(userData);
+    const { data: { session } } = await supabase.auth.getSession();
+    if (session?.user) {
+      setCurrentUser(session.user);
+      
+      // Get user role
+      const { data: roleData } = await supabase
+        .from('user_roles')
+        .select('role')
+        .eq('user_id', session.user.id)
+        .maybeSingle();
+      
+      setUserRole(roleData?.role || null);
+    }
   };
 
   const loadProfiles = async () => {
@@ -117,7 +128,7 @@ const Dashboard = () => {
 
   const handleEditProfile = (profile: Profile) => {
     // Only admins can edit other profiles, users can only edit their own
-    if (!currentUser?.isAdmin && profile.user_id !== currentUser?.id) {
+    if (userRole !== 'admin' && profile.user_id !== currentUser?.id) {
       toast({
         title: "Access Denied",
         description: "You can only edit your own profile",
@@ -177,7 +188,7 @@ const Dashboard = () => {
               Find and connect with study partners
             </p>
           </div>
-          {currentUser?.isAdmin && (
+          {userRole === 'admin' && (
             <Button variant="hero" className="mt-4 lg:mt-0">
               <Plus className="h-4 w-4 mr-2" />
               Add Student
@@ -242,7 +253,7 @@ const Dashboard = () => {
                   ? "Try adjusting your filters to see more results."
                   : "No students yet. Add your first student."}
               </p>
-              {currentUser?.isAdmin && (
+              {userRole === 'admin' && (
                 <Button variant="hero">
                   <Plus className="h-4 w-4 mr-2" />
                   Add Student
@@ -290,7 +301,7 @@ const Dashboard = () => {
                         </div>
                       </td>
                       <td className="p-4 text-muted-foreground">
-                        {currentUser?.isAdmin
+                        {userRole === 'admin'
                           ? "Email hidden for privacy"
                           : profile.user_id === currentUser?.id
                           ? currentUser?.email
@@ -341,7 +352,7 @@ const Dashboard = () => {
                           >
                             <Eye className="h-4 w-4" />
                           </Button>
-                          {(currentUser?.isAdmin ||
+                          {(userRole === 'admin' ||
                             profile.user_id === currentUser?.id) && (
                             <Button
                               variant="ghost"
@@ -401,7 +412,7 @@ const Dashboard = () => {
                   <div>
                     <h4 className="font-medium mb-2">Contact Information</h4>
                     <p className="text-sm text-muted-foreground">
-                      {currentUser?.isAdmin
+                      {userRole === 'admin'
                         ? "Contact admin for email"
                         : "Email hidden for privacy"}
                     </p>

@@ -4,23 +4,53 @@ import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import { BookOpen } from "lucide-react";
 import { useState, useEffect } from "react";
 import ProfileModal from "./ProfileModal";
+import { supabase } from "@/integrations/supabase/client";
 
 const Navigation = () => {
-  const [isLoggedIn, setIsLoggedIn] = useState(false);
-  const [userData, setUserData] = useState<any>(null);
+  const [user, setUser] = useState<any>(null);
+  const [session, setSession] = useState<any>(null);
+  const [userRole, setUserRole] = useState<string | null>(null);
   const [showProfileModal, setShowProfileModal] = useState(false);
 
   useEffect(() => {
-    const checkLoginStatus = () => {
-      const loggedIn = localStorage.getItem('isLoggedIn') === 'true';
-      const user = localStorage.getItem('userData');
-      setIsLoggedIn(loggedIn);
-      if (user) {
-        setUserData(JSON.parse(user));
+    // Set up auth state listener
+    const { data: { subscription } } = supabase.auth.onAuthStateChange(
+      async (event, session) => {
+        setSession(session);
+        setUser(session?.user ?? null);
+        
+        if (session?.user) {
+          // Fetch user role
+          const { data: roleData } = await supabase
+            .from('user_roles')
+            .select('role')
+            .eq('user_id', session.user.id)
+            .maybeSingle();
+          
+          setUserRole(roleData?.role || null);
+        } else {
+          setUserRole(null);
+        }
       }
-    };
+    );
 
-    checkLoginStatus();
+    // Check for existing session
+    supabase.auth.getSession().then(async ({ data: { session } }) => {
+      setSession(session);
+      setUser(session?.user ?? null);
+      
+      if (session?.user) {
+        const { data: roleData } = await supabase
+          .from('user_roles')
+          .select('role')
+          .eq('user_id', session.user.id)
+          .maybeSingle();
+        
+        setUserRole(roleData?.role || null);
+      }
+    });
+
+    return () => subscription.unsubscribe();
   }, []);
 
   const getInitials = (name: string) => {
@@ -32,12 +62,9 @@ const Navigation = () => {
     return name[0].toUpperCase();
   };
 
-  const handleLogout = () => {
-    localStorage.removeItem('isLoggedIn');
-    localStorage.removeItem('userData');
-    setIsLoggedIn(false);
-    setUserData(null);
-    window.location.href = '/';
+  const handleLogout = async () => {
+    await supabase.auth.signOut();
+    // State will be updated automatically via onAuthStateChange
   };
 
   return (
@@ -71,14 +98,14 @@ const Navigation = () => {
 
           {/* Auth Buttons / Profile */}
           <div className="flex items-center gap-3">
-            {isLoggedIn && userData ? (
+            {user ? (
               <div className="flex items-center gap-3">
                 <Avatar 
                   className="h-8 w-8 cursor-pointer hover:ring-2 hover:ring-primary/20 transition-all"
                   onClick={() => setShowProfileModal(true)}
                 >
                   <AvatarFallback className="bg-primary text-primary-foreground text-sm font-semibold">
-                    {getInitials(userData.fullName || userData.email)}
+                    {getInitials(user.user_metadata?.full_name || user.email)}
                   </AvatarFallback>
                 </Avatar>
                 <Button variant="ghost" onClick={handleLogout}>

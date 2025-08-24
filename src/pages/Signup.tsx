@@ -3,7 +3,6 @@ import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { Checkbox } from "@/components/ui/checkbox";
 import { BookOpen } from "lucide-react";
 import { useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
@@ -12,18 +11,6 @@ import { useToast } from "@/hooks/use-toast";
 const Signup = () => {
   const navigate = useNavigate();
   const { toast } = useToast();
-
-  // Unique admin passwords
-  const ADMIN_PASSWORDS = [
-    "ADMIN2024_LISIO_001",
-    "ADMIN2024_LISIO_002",
-    "ADMIN2024_LISIO_003",
-    "ADMIN2024_LISIO_004",
-    "ADMIN2024_LISIO_005",
-  ];
-
-  const [isAdmin, setIsAdmin] = useState(false);
-  const [adminPassword, setAdminPassword] = useState("");
   const [loading, setLoading] = useState(false);
   const [formData, setFormData] = useState({
     fullName: "",
@@ -31,11 +18,6 @@ const Signup = () => {
     password: "",
     confirmPassword: "",
   });
-
-  const isAdminPasswordValid = isAdmin
-    ? ADMIN_PASSWORDS.includes(adminPassword)
-    : true;
-  const isCreateButtonEnabled = !isAdmin || isAdminPasswordValid;
 
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     setFormData({
@@ -56,15 +38,6 @@ const Signup = () => {
       return;
     }
 
-    if (isAdmin && !isAdminPasswordValid) {
-      toast({
-        title: "Invalid admin password",
-        description: "Please enter a valid admin password.",
-        variant: "destructive",
-      });
-      return;
-    }
-
     setLoading(true);
 
     try {
@@ -77,7 +50,6 @@ const Signup = () => {
           emailRedirectTo: redirectUrl,
           data: {
             full_name: formData.fullName,
-            is_admin: isAdmin,
           },
         },
       });
@@ -97,16 +69,6 @@ const Signup = () => {
           description: "Please check your email to confirm your account.",
         });
 
-        // Save user data to localStorage
-        const userData = {
-          id: data.user.id,
-          email: data.user.email,
-          fullName: formData.fullName,
-          isAdmin: isAdmin,
-        };
-        localStorage.setItem("userData", JSON.stringify(userData));
-        localStorage.setItem("isLoggedIn", "true");
-
         window.location.href = "/dashboard";
       }
     } catch (error) {
@@ -119,6 +81,16 @@ const Signup = () => {
     } finally {
       setLoading(false);
     }
+  };
+
+  const isFormValid = () => {
+    return (
+      formData.fullName.trim() &&
+      formData.email &&
+      formData.password &&
+      formData.confirmPassword &&
+      formData.password === formData.confirmPassword
+    );
   };
 
   return (
@@ -188,52 +160,12 @@ const Signup = () => {
               />
             </div>
 
-            <div className="flex items-center space-x-2">
-              <Checkbox
-                id="isAdmin"
-                checked={isAdmin}
-                onCheckedChange={(checked) => {
-                  setIsAdmin(checked as boolean);
-                  if (!checked) {
-                    setAdminPassword("");
-                  }
-                }}
-              />
-              <Label htmlFor="isAdmin" className="text-sm font-medium">
-                I am an Admin
-              </Label>
-            </div>
-
-            {isAdmin && (
-              <div className="space-y-2">
-                <Label htmlFor="adminPassword">Admin Password</Label>
-                <Input
-                  id="adminPassword"
-                  type="password"
-                  placeholder="Enter admin password"
-                  value={adminPassword}
-                  onChange={(e) => setAdminPassword(e.target.value)}
-                  required={isAdmin}
-                  className={
-                    !isAdminPasswordValid && adminPassword
-                      ? "border-destructive"
-                      : ""
-                  }
-                />
-                {!isAdminPasswordValid && adminPassword && (
-                  <p className="text-sm text-destructive">
-                    Invalid admin password
-                  </p>
-                )}
-              </div>
-            )}
-
             <Button
               type="submit"
               variant="hero"
               size="lg"
               className="w-full"
-              disabled={!isCreateButtonEnabled || loading}
+              disabled={!isFormValid() || loading}
             >
               {loading ? "Creating Account..." : "Create Account"}
             </Button>
