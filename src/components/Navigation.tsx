@@ -13,14 +13,36 @@ const Navigation = () => {
   const [showProfileModal, setShowProfileModal] = useState(false);
 
   useEffect(() => {
-    // Set up auth state listener
+    // Set up auth state listener FIRST
     const { data: { subscription } } = supabase.auth.onAuthStateChange(
-      async (event, session) => {
+      (event, session) => {
         setSession(session);
         setUser(session?.user ?? null);
         
+        // Defer async operations to prevent callback blocking
         if (session?.user) {
-          // Fetch user role
+          setTimeout(async () => {
+            const { data: roleData } = await supabase
+              .from('user_roles')
+              .select('role')
+              .eq('user_id', session.user.id)
+              .maybeSingle();
+            
+            setUserRole(roleData?.role || null);
+          }, 0);
+        } else {
+          setUserRole(null);
+        }
+      }
+    );
+
+    // THEN check for existing session
+    supabase.auth.getSession().then(({ data: { session } }) => {
+      setSession(session);
+      setUser(session?.user ?? null);
+      
+      if (session?.user) {
+        setTimeout(async () => {
           const { data: roleData } = await supabase
             .from('user_roles')
             .select('role')
@@ -28,25 +50,7 @@ const Navigation = () => {
             .maybeSingle();
           
           setUserRole(roleData?.role || null);
-        } else {
-          setUserRole(null);
-        }
-      }
-    );
-
-    // Check for existing session
-    supabase.auth.getSession().then(async ({ data: { session } }) => {
-      setSession(session);
-      setUser(session?.user ?? null);
-      
-      if (session?.user) {
-        const { data: roleData } = await supabase
-          .from('user_roles')
-          .select('role')
-          .eq('user_id', session.user.id)
-          .maybeSingle();
-        
-        setUserRole(roleData?.role || null);
+        }, 0);
       }
     });
 
