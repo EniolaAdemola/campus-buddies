@@ -3,64 +3,109 @@ import { Card } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
-import { Mail, MapPin } from "lucide-react";
+import { Mail, MapPin, Sparkles } from "lucide-react";
+import { useState } from "react";
+import { supabase } from "@/integrations/supabase/client";
+import { useToast } from "@/hooks/use-toast";
 
 const Contact = () => {
-  const handleSubmit = (e: React.FormEvent) => {
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const { toast } = useToast();
+
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    // Handle form submission
-    console.log("Form submitted");
+    setIsSubmitting(true);
+
+    const formData = new FormData(e.target as HTMLFormElement);
+    const data = {
+      name: formData.get('name') as string,
+      email: formData.get('email') as string,
+      message: formData.get('message') as string,
+    };
+
+    try {
+      const { error } = await supabase.functions.invoke('send-contact-email', {
+        body: data
+      });
+
+      if (error) throw error;
+
+      toast({
+        title: "Message sent! 🚀",
+        description: "Thanks for reaching out! We'll get back to you within 24 hours.",
+      });
+      
+      (e.target as HTMLFormElement).reset();
+    } catch (error) {
+      console.error('Error sending message:', error);
+      toast({
+        title: "Oops! Something went wrong 😔",
+        description: "Please try again or email us directly at it.eniolaademola@gmail.com",
+        variant: "destructive",
+      });
+    } finally {
+      setIsSubmitting(false);
+    }
   };
 
   return (
     <div className="bg-background">
       <section className="container mx-auto px-4 py-16 lg:py-24">
         <div className="text-center mb-12">
-          <h1 className="text-4xl lg:text-5xl font-bold mb-6">
-            Get in Touch
+          <h1 className="text-4xl lg:text-5xl font-bold mb-6 genz-text-gradient animate-float">
+            Let's Chat! <Sparkles className="inline h-8 w-8" />
           </h1>
           <p className="text-xl text-muted-foreground max-w-2xl mx-auto">
-            Have questions or suggestions? We'd love to hear from you. 
-            Send us a message and we'll respond as soon as possible.
+            Got questions? Ideas? Just want to say hi? 
+            We're here and we're excited to hear from you! ✨
           </p>
         </div>
 
         <div className="grid lg:grid-cols-2 gap-12 max-w-6xl mx-auto">
           {/* Contact Form */}
-          <Card className="p-8">
+          <Card className="p-8 genz-card">
             <form onSubmit={handleSubmit} className="space-y-6">
               <div className="space-y-2">
-                <Label htmlFor="name">Full Name</Label>
+                <Label htmlFor="name" className="text-primary font-medium">What should we call you? 👋</Label>
                 <Input 
                   id="name" 
+                  name="name"
                   type="text" 
-                  placeholder="Enter your full name"
+                  placeholder="Your awesome name here..."
                   required 
+                  className="border-primary/20 focus:border-primary"
                 />
               </div>
               
               <div className="space-y-2">
-                <Label htmlFor="email">Email Address</Label>
+                <Label htmlFor="email" className="text-primary font-medium">Where can we reach you? 📧</Label>
                 <Input 
                   id="email" 
+                  name="email"
                   type="email" 
-                  placeholder="Enter your email address"
+                  placeholder="your.email@example.com"
                   required 
+                  className="border-primary/20 focus:border-primary"
                 />
               </div>
               
               <div className="space-y-2">
-                <Label htmlFor="message">Message</Label>
+                <Label htmlFor="message" className="text-primary font-medium">What's on your mind? 💭</Label>
                 <Textarea 
                   id="message" 
-                  placeholder="Tell us how we can help you..."
-                  className="min-h-32"
+                  name="message"
+                  placeholder="Tell us your thoughts, ideas, or how we can help you be awesome! ✨"
+                  className="min-h-32 border-primary/20 focus:border-primary"
                   required 
                 />
               </div>
               
-              <Button type="submit" variant="hero" size="lg" className="w-full">
-                Send Message
+              <Button 
+                type="submit" 
+                disabled={isSubmitting}
+                className="w-full genz-button text-white font-semibold py-3 text-lg"
+              >
+                {isSubmitting ? "Sending your message... 🚀" : "Send Message ✨"}
               </Button>
             </form>
           </Card>

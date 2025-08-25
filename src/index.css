@@ -36,13 +36,22 @@ All colors MUST be HSL.
     --input: 220 13% 91%;
     --ring: 231 48% 48%;
 
-    /* Study Buddy specific tokens */
-    --hero-gradient: linear-gradient(135deg, hsl(231 48% 48%), hsl(180 80% 40%));
+    /* Study Buddy specific tokens - GenZ vibes */
+    --hero-gradient: linear-gradient(135deg, hsl(280 100% 70%), hsl(320 100% 80%), hsl(220 100% 75%));
+    --genz-purple: 280 100% 70%;
+    --genz-pink: 320 100% 80%;
+    --genz-blue: 220 100% 75%;
+    --genz-green: 140 100% 60%;
+    --genz-yellow: 45 100% 70%;
     --success: 142 76% 36%;
     --warning: 45 93% 47%;
     --info: 198 93% 60%;
     --surface-soft: 220 14% 98%;
     --shadow-soft: 231 48% 48% / 0.1;
+    --gradient-card: linear-gradient(135deg, hsl(280 100% 95%), hsl(320 100% 95%));
+    --glassmorphism: rgba(255, 255, 255, 0.1);
+    --glow-purple: 280 100% 70% / 0.3;
+    --glow-pink: 320 100% 80% / 0.3;
 
     --radius: 0.5rem;
 
@@ -64,33 +73,33 @@ All colors MUST be HSL.
   }
 
   .dark {
-    --background: 222.2 84% 4.9%;
-    --foreground: 210 40% 98%;
+    --background: 240 10% 3.9%;
+    --foreground: 280 5% 90%;
 
-    --card: 222.2 84% 4.9%;
-    --card-foreground: 210 40% 98%;
+    --card: 240 10% 3.9%;
+    --card-foreground: 280 5% 90%;
 
-    --popover: 222.2 84% 4.9%;
-    --popover-foreground: 210 40% 98%;
+    --popover: 240 10% 3.9%;
+    --popover-foreground: 280 5% 90%;
 
-    --primary: 210 40% 98%;
-    --primary-foreground: 222.2 47.4% 11.2%;
+    --primary: 280 100% 70%;
+    --primary-foreground: 240 10% 3.9%;
 
-    --secondary: 217.2 32.6% 17.5%;
-    --secondary-foreground: 210 40% 98%;
+    --secondary: 240 3.7% 15.9%;
+    --secondary-foreground: 280 5% 90%;
 
-    --muted: 217.2 32.6% 17.5%;
-    --muted-foreground: 215 20.2% 65.1%;
+    --muted: 240 3.7% 15.9%;
+    --muted-foreground: 240 5% 64.9%;
 
-    --accent: 217.2 32.6% 17.5%;
-    --accent-foreground: 210 40% 98%;
+    --accent: 320 100% 80%;
+    --accent-foreground: 240 10% 3.9%;
 
     --destructive: 0 62.8% 30.6%;
     --destructive-foreground: 210 40% 98%;
 
-    --border: 217.2 32.6% 17.5%;
-    --input: 217.2 32.6% 17.5%;
-    --ring: 212.7 26.8% 83.9%;
+    --border: 240 3.7% 15.9%;
+    --input: 240 3.7% 15.9%;
+    --ring: 280 100% 70%;
     --sidebar-background: 240 5.9% 10%;
     --sidebar-foreground: 240 4.8% 95.9%;
     --sidebar-primary: 224.3 76.3% 48%;
@@ -117,6 +126,30 @@ All colors MUST be HSL.
     background: var(--hero-gradient);
   }
   
+  .genz-card {
+    background: var(--gradient-card);
+    backdrop-filter: blur(20px);
+    border: 1px solid hsl(var(--glassmorphism));
+  }
+  
+  .genz-button {
+    background: linear-gradient(135deg, hsl(var(--genz-purple)), hsl(var(--genz-pink)));
+    transition: all 0.3s ease;
+    transform-origin: center;
+  }
+  
+  .genz-button:hover {
+    transform: scale(1.05);
+    box-shadow: 0 10px 25px hsl(var(--glow-purple));
+  }
+  
+  .genz-text-gradient {
+    background: linear-gradient(135deg, hsl(var(--genz-purple)), hsl(var(--genz-pink)), hsl(var(--genz-blue)));
+    background-clip: text;
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+  }
+  
   .status-available {
     @apply bg-green-500/10 text-green-700 border-green-500/20;
   }
@@ -135,5 +168,20 @@ All colors MUST be HSL.
   
   .shadow-study {
     box-shadow: 0 4px 16px hsl(var(--shadow-soft));
+  }
+  
+  .glassmorphism {
+    background: rgba(255, 255, 255, 0.1);
+    backdrop-filter: blur(20px);
+    border: 1px solid rgba(255, 255, 255, 0.2);
+  }
+  
+  .animate-float {
+    animation: float 3s ease-in-out infinite;
+  }
+  
+  @keyframes float {
+    0%, 100% { transform: translateY(0px); }
+    50% { transform: translateY(-10px); }
   }
 }

@@ -70,23 +70,33 @@ const Dashboard = () => {
   };
 
   useEffect(() => {
-    loadCurrentUser();
-    loadProfiles();
+    const loadData = async () => {
+      try {
+        await Promise.all([loadCurrentUser(), loadProfiles()]);
+      } catch (error) {
+        console.error('Error loading dashboard data:', error);
+      }
+    };
+    loadData();
   }, []);
 
   const loadCurrentUser = async () => {
-    const { data: { session } } = await supabase.auth.getSession();
-    if (session?.user) {
-      setCurrentUser(session.user);
-      
-      // Get user role
-      const { data: roleData } = await supabase
-        .from('user_roles')
-        .select('role')
-        .eq('user_id', session.user.id)
-        .maybeSingle();
-      
-      setUserRole(roleData?.role || null);
+    try {
+      const { data: { session } } = await supabase.auth.getSession();
+      if (session?.user) {
+        setCurrentUser(session.user);
+        
+        // Get user role
+        const { data: roleData } = await supabase
+          .from('user_roles')
+          .select('role')
+          .eq('user_id', session.user.id)
+          .maybeSingle();
+        
+        setUserRole(roleData?.role || null);
+      }
+    } catch (error) {
+      console.error('Error loading current user:', error);
     }
   };
 
