@@ -99,13 +99,11 @@ const Dashboard = () => {
         if (session?.user) {
           setCurrentUser(session.user);
           setTimeout(async () => {
-            const { data: roleData } = await supabase
-              .from('user_roles')
-              .select('role')
-              .eq('user_id', session.user.id)
-              .maybeSingle();
-            
-            setUserRole(roleData?.role || null);
+            const { data, error } = await supabase.rpc('get_current_user_role');
+            if (error) {
+              console.error('Error fetching role via RPC:', error);
+            }
+            setUserRole((data as any) || null);
           }, 0);
         } else {
           setCurrentUser(null);
@@ -121,13 +119,11 @@ const Dashboard = () => {
         if (session?.user) {
           setCurrentUser(session.user);
           
-          const { data: roleData } = await supabase
-            .from('user_roles')
-            .select('role')
-            .eq('user_id', session.user.id)
-            .maybeSingle();
-          
-          setUserRole(roleData?.role || null);
+          const { data, error: roleErr } = await supabase.rpc('get_current_user_role');
+          if (roleErr) {
+            console.error('Error fetching role via RPC:', roleErr);
+          }
+          setUserRole((data as any) || null);
         }
         
         // Load profiles
@@ -149,13 +145,11 @@ const Dashboard = () => {
         setCurrentUser(session.user);
         
         // Get user role
-        const { data: roleData } = await supabase
-          .from('user_roles')
-          .select('role')
-          .eq('user_id', session.user.id)
-          .maybeSingle();
-        
-        setUserRole(roleData?.role || null);
+        const { data, error } = await supabase.rpc('get_current_user_role');
+        if (error) {
+          console.error('Error fetching role via RPC:', error);
+        }
+        setUserRole((data as any) || null);
       }
     } catch (error) {
       console.error('Error loading current user:', error);

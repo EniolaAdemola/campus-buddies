@@ -22,13 +22,11 @@ const Navigation = () => {
         // Defer async operations to prevent callback blocking
         if (session?.user) {
           setTimeout(async () => {
-            const { data: roleData } = await supabase
-              .from('user_roles')
-              .select('role')
-              .eq('user_id', session.user.id)
-              .maybeSingle();
-            
-            setUserRole(roleData?.role || null);
+            const { data, error } = await supabase.rpc('get_current_user_role');
+            if (error) {
+              console.error('Error fetching role via RPC:', error);
+            }
+            setUserRole((data as any) || null);
           }, 0);
         } else {
           setUserRole(null);
@@ -43,13 +41,11 @@ const Navigation = () => {
       
       if (session?.user) {
         setTimeout(async () => {
-          const { data: roleData } = await supabase
-            .from('user_roles')
-            .select('role')
-            .eq('user_id', session.user.id)
-            .maybeSingle();
-          
-          setUserRole(roleData?.role || null);
+          const { data, error } = await supabase.rpc('get_current_user_role');
+          if (error) {
+            console.error('Error fetching role via RPC:', error);
+          }
+          setUserRole((data as any) || null);
         }, 0);
       }
     });
