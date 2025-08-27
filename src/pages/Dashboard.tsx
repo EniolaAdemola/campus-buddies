@@ -19,6 +19,14 @@ import {
 import { Search, Filter, Plus, Eye, Edit, UserPlus } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
+import {
+  Pagination,
+  PaginationContent,
+  PaginationItem,
+  PaginationLink,
+  PaginationNext,
+  PaginationPrevious,
+} from "@/components/ui/pagination";
 
 interface Profile {
   id: string;
@@ -45,6 +53,8 @@ const Dashboard = () => {
   const [selectedProfile, setSelectedProfile] = useState<Profile | null>(null);
   const [showDetailModal, setShowDetailModal] = useState(false);
   const [availableCourses, setAvailableCourses] = useState<string[]>([]);
+  const [currentPage, setCurrentPage] = useState(1);
+  const [usersPerPage] = useState(10);
   const { toast } = useToast();
 
   const getStatusStyle = (status: string) => {
@@ -226,6 +236,17 @@ const Dashboard = () => {
     return matchesSearch && matchesCourse && matchesStatus;
   });
 
+  // Pagination calculations
+  const totalPages = Math.ceil(filteredStudents.length / usersPerPage);
+  const startIndex = (currentPage - 1) * usersPerPage;
+  const endIndex = startIndex + usersPerPage;
+  const currentStudents = filteredStudents.slice(startIndex, endIndex);
+
+  // Reset to first page when filters change
+  useEffect(() => {
+    setCurrentPage(1);
+  }, [searchQuery, courseFilter, statusFilter]);
+
   return (
     <div className="bg-background min-h-screen">
       <div className="container mx-auto px-4 py-8">
@@ -314,6 +335,7 @@ const Dashboard = () => {
               <table className="w-full">
                 <thead className="border-b border-border">
                   <tr className="text-left">
+                    <th className="p-4 font-medium">#</th>
                     <th className="p-4 font-medium">Student</th>
                     <th className="p-4 font-medium">Email</th>
                     <th className="p-4 font-medium">Course</th>
@@ -323,11 +345,16 @@ const Dashboard = () => {
                   </tr>
                 </thead>
                 <tbody>
-                  {filteredStudents.map((profile) => (
+                  {currentStudents.map((profile, index) => (
                     <tr
                       key={profile.id}
                       className="border-b border-border last:border-b-0 hover:bg-muted/50"
                     >
+                      <td className="p-4">
+                        <div className="font-medium text-center">
+                          {startIndex + index + 1}
+                        </div>
+                      </td>
                       <td className="p-4">
                         <div className="flex items-center gap-3">
                           <Avatar>
@@ -420,6 +447,52 @@ const Dashboard = () => {
             </div>
           )}
         </div>
+
+        {/* Pagination */}
+        {filteredStudents.length > 0 && totalPages > 1 && (
+          <div className="flex justify-center mt-6">
+            <Pagination>
+              <PaginationContent>
+                <PaginationItem>
+                  <PaginationPrevious 
+                    href="#" 
+                    onClick={(e) => {
+                      e.preventDefault();
+                      if (currentPage > 1) setCurrentPage(currentPage - 1);
+                    }}
+                    className={currentPage === 1 ? "pointer-events-none opacity-50" : ""}
+                  />
+                </PaginationItem>
+                
+                {Array.from({ length: totalPages }, (_, i) => i + 1).map((page) => (
+                  <PaginationItem key={page}>
+                    <PaginationLink
+                      href="#"
+                      onClick={(e) => {
+                        e.preventDefault();
+                        setCurrentPage(page);
+                      }}
+                      isActive={page === currentPage}
+                    >
+                      {page}
+                    </PaginationLink>
+                  </PaginationItem>
+                ))}
+                
+                <PaginationItem>
+                  <PaginationNext 
+                    href="#" 
+                    onClick={(e) => {
+                      e.preventDefault();
+                      if (currentPage < totalPages) setCurrentPage(currentPage + 1);
+                    }}
+                    className={currentPage === totalPages ? "pointer-events-none opacity-50" : ""}
+                  />
+                </PaginationItem>
+              </PaginationContent>
+            </Pagination>
+          </div>
+        )}
 
         {/* Student Detail Modal */}
         <Dialog open={showDetailModal} onOpenChange={setShowDetailModal}>
