@@ -16,6 +16,8 @@ import {
   DialogHeader,
   DialogTitle,
 } from "@/components/ui/dialog";
+import { Textarea } from "@/components/ui/textarea";
+import { Label } from "@/components/ui/label";
 import { Search, Filter, Plus, Eye, Edit, UserPlus } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
@@ -52,6 +54,17 @@ const Dashboard = () => {
   const [userRole, setUserRole] = useState<string | null>(null);
   const [selectedProfile, setSelectedProfile] = useState<Profile | null>(null);
   const [showDetailModal, setShowDetailModal] = useState(false);
+  const [showEditModal, setShowEditModal] = useState(false);
+  const [editingProfile, setEditingProfile] = useState<Profile | null>(null);
+  const [editForm, setEditForm] = useState({
+    full_name: "",
+    course: "",
+    year: "",
+    description: "",
+    interests: "",
+    status: "available",
+    group_number: ""
+  });
   const [availableCourses, setAvailableCourses] = useState<string[]>([]);
   const [currentPage, setCurrentPage] = useState(1);
   const [usersPerPage] = useState(10);
@@ -195,11 +208,60 @@ const Dashboard = () => {
       });
       return;
     }
-    // TODO: Implement edit functionality
-    toast({
-      title: "Edit Profile",
-      description: "Edit functionality will be implemented soon",
+    
+    // Set up edit form with current profile data
+    setEditingProfile(profile);
+    setEditForm({
+      full_name: profile.full_name || "",
+      course: profile.course || "",
+      year: profile.year || "",
+      description: profile.description || "",
+      interests: (profile.interests || []).join(", "),
+      status: profile.status || "available",
+      group_number: profile.group_number?.toString() || ""
     });
+    setShowEditModal(true);
+  };
+
+  const handleSaveProfile = async () => {
+    if (!editingProfile) return;
+
+    try {
+      const { error } = await supabase
+        .from("profiles")
+        .update({
+          full_name: editForm.full_name || null,
+          course: editForm.course || null,
+          year: editForm.year || null,
+          description: editForm.description || null,
+          interests: editForm.interests
+            ? editForm.interests.split(",").map(i => i.trim()).filter(Boolean)
+            : null,
+          status: editForm.status,
+          group_number: editForm.group_number ? parseInt(editForm.group_number) : null,
+        })
+        .eq("id", editingProfile.id);
+
+      if (error) {
+        throw error;
+      }
+
+      toast({
+        title: "Success",
+        description: "Profile updated successfully",
+      });
+
+      setShowEditModal(false);
+      setEditingProfile(null);
+      await loadProfiles(); // Reload to show updated data
+    } catch (error) {
+      console.error("Error updating profile:", error);
+      toast({
+        title: "Error",
+        description: "Failed to update profile",
+        variant: "destructive",
+      });
+    }
   };
 
   const formatLastActive = (lastActive: string | null) => {
@@ -607,6 +669,105 @@ const Dashboard = () => {
                     </p>
                   </div>
                 )}
+              </div>
+            )}
+          </DialogContent>
+        </Dialog>
+
+        {/* Edit Profile Modal */}
+        <Dialog open={showEditModal} onOpenChange={setShowEditModal}>
+          <DialogContent className="max-w-2xl">
+            <DialogHeader>
+              <DialogTitle>Edit Profile</DialogTitle>
+            </DialogHeader>
+            {editingProfile && (
+              <div className="space-y-4">
+                <div className="grid grid-cols-2 gap-4">
+                  <div className="space-y-2">
+                    <Label htmlFor="full_name">Full Name</Label>
+                    <Input
+                      id="full_name"
+                      value={editForm.full_name}
+                      onChange={(e) => setEditForm({ ...editForm, full_name: e.target.value })}
+                      placeholder="Enter full name"
+                    />
+                  </div>
+                  <div className="space-y-2">
+                    <Label htmlFor="course">Course</Label>
+                    <Input
+                      id="course"
+                      value={editForm.course}
+                      onChange={(e) => setEditForm({ ...editForm, course: e.target.value })}
+                      placeholder="Enter course"
+                    />
+                  </div>
+                </div>
+
+                <div className="grid grid-cols-2 gap-4">
+                  <div className="space-y-2">
+                    <Label htmlFor="year">Year</Label>
+                    <Input
+                      id="year"
+                      value={editForm.year}
+                      onChange={(e) => setEditForm({ ...editForm, year: e.target.value })}
+                      placeholder="Enter year"
+                    />
+                  </div>
+                  <div className="space-y-2">
+                    <Label htmlFor="group_number">Group Number</Label>
+                    <Input
+                      id="group_number"
+                      type="number"
+                      value={editForm.group_number}
+                      onChange={(e) => setEditForm({ ...editForm, group_number: e.target.value })}
+                      placeholder="Enter group number"
+                    />
+                  </div>
+                </div>
+
+                <div className="space-y-2">
+                  <Label htmlFor="status">Status</Label>
+                  <Select value={editForm.status} onValueChange={(value) => setEditForm({ ...editForm, status: value })}>
+                    <SelectTrigger>
+                      <SelectValue placeholder="Select status" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="available">Available</SelectItem>
+                      <SelectItem value="busy">Busy</SelectItem>
+                      <SelectItem value="offline">Offline</SelectItem>
+                    </SelectContent>
+                  </Select>
+                </div>
+
+                <div className="space-y-2">
+                  <Label htmlFor="interests">Interests (comma separated)</Label>
+                  <Input
+                    id="interests"
+                    value={editForm.interests}
+                    onChange={(e) => setEditForm({ ...editForm, interests: e.target.value })}
+                    placeholder="Enter interests separated by commas"
+                  />
+                </div>
+
+                <div className="space-y-2">
+                  <Label htmlFor="description">Description</Label>
+                  <Textarea
+                    id="description"
+                    value={editForm.description}
+                    onChange={(e) => setEditForm({ ...editForm, description: e.target.value })}
+                    placeholder="Enter description"
+                    rows={3}
+                  />
+                </div>
+
+                <div className="flex justify-end gap-2 pt-4">
+                  <Button variant="outline" onClick={() => setShowEditModal(false)}>
+                    Cancel
+                  </Button>
+                  <Button onClick={handleSaveProfile}>
+                    Save Changes
+                  </Button>
+                </div>
               </div>
             )}
           </DialogContent>
