@@ -250,10 +250,38 @@ const Dashboard = () => {
   return (
     <div className="bg-background min-h-screen">
       <div className="container mx-auto px-4 py-8">
+        {/* Check if user is authenticated */}
+        {!currentUser ? (
+          <div className="text-center py-20">
+            <div className="max-w-md mx-auto">
+              <h1 className="text-3xl font-bold mb-4">Welcome to Lisio Buddy</h1>
+              <p className="text-muted-foreground mb-8">
+                Please sign up or login to view all students available and connect with study partners.
+              </p>
+              <div className="flex flex-col sm:flex-row gap-4 justify-center">
+                <Button 
+                  variant="hero"
+                  onClick={() => window.location.href = '/login'}
+                  className="flex-1 sm:flex-none"
+                >
+                  Login
+                </Button>
+                <Button 
+                  variant="outline" 
+                  onClick={() => window.location.href = '/signup'}
+                  className="flex-1 sm:flex-none"
+                >
+                  Sign Up
+                </Button>
+              </div>
+            </div>
+          </div>
+        ) : (
+          <>
         {/* Header */}
         <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between mb-8">
           <div>
-            <h1 className="text-3xl font-bold mb-2">Study Buddy Dashboard</h1>
+            <h1 className="text-3xl font-bold mb-2">Lisio Buddy Dashboard</h1>
             <p className="text-muted-foreground">
               Find and connect with study partners
             </p>
@@ -583,6 +611,8 @@ const Dashboard = () => {
             )}
           </DialogContent>
         </Dialog>
+        </>
+        )}
       </div>
     </div>
   );
