@@ -99,11 +99,12 @@ const Dashboard = () => {
         if (session?.user) {
           setCurrentUser(session.user);
           setTimeout(async () => {
-            const { data, error } = await supabase.rpc('get_current_user_role');
-            if (error) {
-              console.error('Error fetching role via RPC:', error);
-            }
-            setUserRole((data as any) || null);
+          const { data, error } = await supabase.rpc('get_current_user_role');
+          if (error) {
+            console.error('Error fetching role via RPC:', error);
+          }
+          console.log('RPC returned role data:', data, 'Type:', typeof data);
+          setUserRole((data as any) || null);
           }, 0);
         } else {
           setCurrentUser(null);
@@ -512,16 +513,14 @@ const Dashboard = () => {
                           >
                             <Eye className="h-4 w-4" />
                           </Button>
-                          {(userRole === 'admin' ||
-                            profile.user_id === currentUser?.id) && (
-                            <Button
-                              variant="ghost"
-                              size="sm"
-                              onClick={() => handleEditProfile(profile)}
-                            >
-                              <Edit className="h-4 w-4" />
-                            </Button>
-                          )}
+                           {/* Debug: showing edit for all users temporarily */}
+                           <Button
+                             variant="ghost"
+                             size="sm"
+                             onClick={() => handleEditProfile(profile)}
+                           >
+                             <Edit className="h-4 w-4" />
+                           </Button>
                         </div>
                       </td>
                     </tr>
