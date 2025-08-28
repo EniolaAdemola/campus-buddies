@@ -318,7 +318,7 @@ const Dashboard = () => {
 
   return (
     <div className="bg-background min-h-screen">
-      <div className="container mx-auto px-4 py-8">
+      <div className="container mx-auto px-4 py-4 lg:py-8">
         {/* Check if user is authenticated */}
         {!currentUser ? (
           <div className="text-center py-20">
@@ -428,116 +428,208 @@ const Dashboard = () => {
               )}
             </div>
           ) : (
-            <div className="overflow-x-auto">
-              <table className="w-full">
-                <thead className="border-b border-border">
-                  <tr className="text-left">
-                    <th className="p-4 font-medium">#</th>
-                    <th className="p-4 font-medium">Student</th>
-                    <th className="p-4 font-medium">Email</th>
-                    <th className="p-4 font-medium">Course</th>
-                    <th className="p-4 font-medium">Interests</th>
-                    <th className="p-4 font-medium">Status</th>
-                    <th className="p-4 font-medium">Actions</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {currentStudents.map((profile, index) => (
-                    <tr
-                      key={profile.id}
-                      className="border-b border-border last:border-b-0 hover:bg-muted/50"
-                    >
-                      <td className="p-4">
-                        <div className="font-medium text-center">
-                          {startIndex + index + 1}
-                        </div>
-                      </td>
-                      <td className="p-4">
-                        <div className="flex items-center gap-3">
-                          <Avatar>
-                            <AvatarImage src={profile.avatar || ""} />
-                            <AvatarFallback>
-                              {(profile.full_name || "N A")
-                                .split(" ")
-                                .map((n) => n[0])
-                                .join("")}
-                            </AvatarFallback>
-                          </Avatar>
-                          <div>
-                            <div className="font-medium">
-                              {profile.full_name || "No Name"}
-                            </div>
-                            <div className="text-sm text-muted-foreground">
-                              {profile.year || "No Year"}
+            <>
+              {/* Desktop Table View */}
+              <div className="hidden lg:block overflow-x-auto">
+                <table className="w-full">
+                  <thead className="border-b border-border">
+                    <tr className="text-left">
+                      <th className="p-4 font-medium">#</th>
+                      <th className="p-4 font-medium">Student</th>
+                      <th className="p-4 font-medium">Email</th>
+                      <th className="p-4 font-medium">Course</th>
+                      <th className="p-4 font-medium">Interests</th>
+                      <th className="p-4 font-medium">Status</th>
+                      <th className="p-4 font-medium">Actions</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {currentStudents.map((profile, index) => (
+                      <tr
+                        key={profile.id}
+                        className="border-b border-border last:border-b-0 hover:bg-muted/50"
+                      >
+                        <td className="p-4">
+                          <div className="font-medium text-center">
+                            {startIndex + index + 1}
+                          </div>
+                        </td>
+                        <td className="p-4">
+                          <div className="flex items-center gap-3">
+                            <Avatar>
+                              <AvatarImage src={profile.avatar || ""} />
+                              <AvatarFallback>
+                                {(profile.full_name || "N A")
+                                  .split(" ")
+                                  .map((n) => n[0])
+                                  .join("")}
+                              </AvatarFallback>
+                            </Avatar>
+                            <div>
+                              <div className="font-medium">
+                                {profile.full_name || "No Name"}
+                              </div>
+                              <div className="text-sm text-muted-foreground">
+                                {profile.year || "No Year"}
+                              </div>
                             </div>
                           </div>
-                        </div>
-                      </td>
-                      <td className="p-4 text-muted-foreground">
-                        {profile.email || "No Email"}
-                      </td>
-                      <td className="p-4">{profile.course || "No Course"}</td>
-                      <td className="p-4">
-                        <div className="flex flex-wrap gap-1">
-                          {(profile.interests || [])
-                            .slice(0, 2)
-                            .map((interest) => (
-                              <Badge
-                                key={interest}
-                                variant="secondary"
-                                className="text-xs"
-                              >
-                                {interest}
+                        </td>
+                        <td className="p-4 text-muted-foreground">
+                          {profile.email || "No Email"}
+                        </td>
+                        <td className="p-4">{profile.course || "No Course"}</td>
+                        <td className="p-4">
+                          <div className="flex flex-wrap gap-1">
+                            {(profile.interests || [])
+                              .slice(0, 2)
+                              .map((interest) => (
+                                <Badge
+                                  key={interest}
+                                  variant="secondary"
+                                  className="text-xs"
+                                >
+                                  {interest}
+                                </Badge>
+                              ))}
+                            {(profile.interests || []).length > 2 && (
+                              <Badge variant="outline" className="text-xs">
+                                +{(profile.interests || []).length - 2}
                               </Badge>
-                            ))}
-                          {(profile.interests || []).length > 2 && (
-                            <Badge variant="outline" className="text-xs">
-                              +{(profile.interests || []).length - 2}
+                            )}
+                            {(!profile.interests ||
+                              profile.interests.length === 0) && (
+                              <span className="text-xs text-muted-foreground">
+                                No interests
+                              </span>
+                            )}
+                          </div>
+                        </td>
+                        <td className="p-4">
+                          <Badge
+                            className={getStatusStyle(
+                              profile.status || "offline"
+                            )}
+                          >
+                            {getStatusText(profile.status || "offline")}
+                          </Badge>
+                        </td>
+                        <td className="p-4">
+                          <div className="flex items-center gap-2">
+                            <Button
+                              variant="ghost"
+                              size="sm"
+                              onClick={() => handleViewProfile(profile)}
+                            >
+                              <Eye className="h-4 w-4" />
+                            </Button>
+                            {(userRole === 'admin' ||
+                              profile.user_id === currentUser?.id) && (
+                              <Button
+                                variant="ghost"
+                                size="sm"
+                                onClick={() => handleEditProfile(profile)}
+                              >
+                                <Edit className="h-4 w-4" />
+                              </Button>
+                            )}
+                          </div>
+                        </td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
+
+              {/* Mobile Card View */}
+              <div className="lg:hidden space-y-4 p-4">
+                {currentStudents.map((profile, index) => (
+                  <div 
+                    key={profile.id}
+                    className="bg-card border border-border rounded-lg p-4 space-y-3"
+                  >
+                    <div className="flex items-start justify-between">
+                      <div className="flex items-center gap-3">
+                        <Avatar>
+                          <AvatarImage src={profile.avatar || ""} />
+                          <AvatarFallback>
+                            {(profile.full_name || "N A")
+                              .split(" ")
+                              .map((n) => n[0])
+                              .join("")}
+                          </AvatarFallback>
+                        </Avatar>
+                        <div>
+                          <div className="font-medium">
+                            {profile.full_name || "No Name"}
+                          </div>
+                          <div className="text-sm text-muted-foreground">
+                            {profile.course || "No Course"} • {profile.year || "No Year"}
+                          </div>
+                        </div>
+                      </div>
+                      <Badge
+                        className={getStatusStyle(profile.status || "offline")}
+                      >
+                        {getStatusText(profile.status || "offline")}
+                      </Badge>
+                    </div>
+
+                    <div className="space-y-2">
+                      <div className="text-sm">
+                        <span className="font-medium">Email: </span>
+                        <span className="text-muted-foreground">
+                          {profile.email || "No Email"}
+                        </span>
+                      </div>
+                      
+                      <div>
+                        <span className="text-sm font-medium">Interests: </span>
+                        <div className="flex flex-wrap gap-1 mt-1">
+                          {(profile.interests || []).map((interest) => (
+                            <Badge
+                              key={interest}
+                              variant="secondary"
+                              className="text-xs"
+                            >
+                              {interest}
                             </Badge>
-                          )}
-                          {(!profile.interests ||
-                            profile.interests.length === 0) && (
+                          ))}
+                          {(!profile.interests || profile.interests.length === 0) && (
                             <span className="text-xs text-muted-foreground">
                               No interests
                             </span>
                           )}
                         </div>
-                      </td>
-                      <td className="p-4">
-                        <Badge
-                          className={getStatusStyle(
-                            profile.status || "offline"
-                          )}
+                      </div>
+                    </div>
+
+                    <div className="flex items-center gap-2 pt-2">
+                      <Button
+                        variant="ghost"
+                        size="sm"
+                        onClick={() => handleViewProfile(profile)}
+                        className="flex-1"
+                      >
+                        <Eye className="h-4 w-4 mr-2" />
+                        View
+                      </Button>
+                      {(userRole === 'admin' || profile.user_id === currentUser?.id) && (
+                        <Button
+                          variant="ghost"
+                          size="sm"
+                          onClick={() => handleEditProfile(profile)}
+                          className="flex-1"
                         >
-                          {getStatusText(profile.status || "offline")}
-                        </Badge>
-                      </td>
-                      <td className="p-4">
-                        <div className="flex items-center gap-2">
-                          <Button
-                            variant="ghost"
-                            size="sm"
-                            onClick={() => handleViewProfile(profile)}
-                          >
-                            <Eye className="h-4 w-4" />
-                          </Button>
-                          {(userRole === 'admin' ||
-                            profile.user_id === currentUser?.id) && (
-                            <Button
-                              variant="ghost"
-                              size="sm"
-                              onClick={() => handleEditProfile(profile)}
-                            >
-                              <Edit className="h-4 w-4" />
-                            </Button>
-                          )}
-                        </div>
-                      </td>
-                    </tr>
-                  ))}
-                </tbody>
-              </table>
-            </div>
+                          <Edit className="h-4 w-4 mr-2" />
+                          Edit
+                        </Button>
+                      )}
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </>
           )}
         </div>
 

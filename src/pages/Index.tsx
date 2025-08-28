@@ -7,16 +7,16 @@ import heroImage from "@/assets/hero-study-buddy.jpg";
 
 const Index = () => {
   return (
-    <div className="bg-background">
+    <div className="bg-background overflow-x-hidden">
       {/* Hero Section */}
-      <section className="container mx-auto px-4 py-16 lg:py-24">
-        <div className="grid lg:grid-cols-2 gap-12 items-center">
+      <section className="container mx-auto px-4 py-8 lg:py-16 xl:py-24">
+        <div className="grid lg:grid-cols-2 gap-8 lg:gap-12 items-center">
           <div className="space-y-6">
-            <h1 className="text-4xl lg:text-6xl font-bold leading-tight">
+            <h1 className="text-3xl sm:text-4xl lg:text-6xl font-bold leading-tight">
               Find your perfect
               <span className="genz-text-gradient animate-float"> study buddy</span> ✨
             </h1>
-            <p className="text-xl text-muted-foreground leading-relaxed">
+            <p className="text-lg sm:text-xl text-muted-foreground leading-relaxed">
               Match by course, interests, and availability. Connect with motivated students for collaborative learning.
             </p>
             <div className="flex flex-col sm:flex-row gap-4">
@@ -45,7 +45,7 @@ const Index = () => {
             <h2 className="text-3xl font-bold mb-4">Everything you need to connect</h2>
             <p className="text-muted-foreground text-lg">Powerful features to help you find the perfect study partner</p>
           </div>
-          <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-6">
+          <div className="grid sm:grid-cols-2 lg:grid-cols-4 gap-6">
             <FeatureCard
               icon={Users}
               title="Browse Active Students"
@@ -77,7 +77,7 @@ const Index = () => {
             <h2 className="text-3xl font-bold mb-4">How it works</h2>
             <p className="text-muted-foreground text-lg">Get connected in three simple steps</p>
           </div>
-          <div className="grid md:grid-cols-3 gap-8 max-w-4xl mx-auto">
+          <div className="grid sm:grid-cols-1 md:grid-cols-3 gap-8 max-w-4xl mx-auto">
             <StepCard
               step={1}
               title="Sign Up"
