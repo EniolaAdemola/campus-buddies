@@ -5,6 +5,7 @@ import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { BrowserRouter, Routes, Route } from "react-router-dom";
 import { SidebarProvider, SidebarTrigger } from "@/components/ui/sidebar";
 import { AppSidebar } from "@/components/AppSidebar";
+import Navigation from "@/components/Navigation";
 import Index from "./pages/Index";
 import About from "./pages/About";
 import Contact from "./pages/Contact";
@@ -24,10 +25,18 @@ const App = () => (
       <BrowserRouter>
         <SidebarProvider>
           <div className="min-h-screen flex w-full">
-            <AppSidebar />
+            {/* Desktop: Show sidebar */}
+            <div className="hidden lg:block">
+              <AppSidebar />
+            </div>
             
             <div className="flex-1 flex flex-col">
-              {/* Mobile header with hamburger menu */}
+              {/* Mobile: Show navigation, Desktop: Hidden */}
+              <div className="lg:hidden">
+                <Navigation />
+              </div>
+              
+              {/* Mobile: Show sidebar trigger */}
               <header className="lg:hidden h-14 flex items-center justify-between border-b border-border bg-background px-4">
                 <SidebarTrigger className="h-8 w-8" />
                 <h1 className="text-lg font-semibold">LisioBuddy</h1>
