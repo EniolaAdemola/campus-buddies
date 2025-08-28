@@ -98,17 +98,23 @@ const Dashboard = () => {
       (event, session) => {
         if (session?.user) {
           setCurrentUser(session.user);
-          setTimeout(async () => {
-          const { data, error } = await supabase.rpc('get_current_user_role');
-          if (error) {
-            console.error('Error fetching role via RPC:', error);
+          // Check localStorage for user role first
+          const storedRole = localStorage.getItem('userRole');
+          if (storedRole) {
+            setUserRole(storedRole as any);
+          } else {
+            // Fallback to RPC if not in localStorage
+            supabase.rpc('get_current_user_role').then(({ data, error }) => {
+              if (!error && data) {
+                setUserRole(data as any);
+                localStorage.setItem('userRole', data as string);
+              }
+            });
           }
-          console.log('RPC returned role data:', data, 'Type:', typeof data);
-          setUserRole((data as any) || null);
-          }, 0);
         } else {
           setCurrentUser(null);
           setUserRole(null);
+          localStorage.removeItem('userRole');
         }
       }
     );
@@ -120,11 +126,17 @@ const Dashboard = () => {
         if (session?.user) {
           setCurrentUser(session.user);
           
-          const { data, error: roleErr } = await supabase.rpc('get_current_user_role');
-          if (roleErr) {
-            console.error('Error fetching role via RPC:', roleErr);
+          // Check localStorage first, then RPC
+          const storedRole = localStorage.getItem('userRole');
+          if (storedRole) {
+            setUserRole(storedRole as any);
+          } else {
+            const { data, error: roleErr } = await supabase.rpc('get_current_user_role');
+            if (!roleErr && data) {
+              setUserRole(data as any);
+              localStorage.setItem('userRole', data as string);
+            }
           }
-          setUserRole((data as any) || null);
         }
         
         // Load profiles
@@ -513,14 +525,16 @@ const Dashboard = () => {
                           >
                             <Eye className="h-4 w-4" />
                           </Button>
-                           {/* Debug: showing edit for all users temporarily */}
-                           <Button
-                             variant="ghost"
-                             size="sm"
-                             onClick={() => handleEditProfile(profile)}
-                           >
-                             <Edit className="h-4 w-4" />
-                           </Button>
+                          {(userRole === 'admin' ||
+                            profile.user_id === currentUser?.id) && (
+                            <Button
+                              variant="ghost"
+                              size="sm"
+                              onClick={() => handleEditProfile(profile)}
+                            >
+                              <Edit className="h-4 w-4" />
+                            </Button>
+                          )}
                         </div>
                       </td>
                     </tr>
