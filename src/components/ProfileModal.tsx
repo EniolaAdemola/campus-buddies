@@ -32,6 +32,7 @@ const ProfileModal = ({ open, onOpenChange }: ProfileModalProps) => {
   const [newInterest, setNewInterest] = useState("");
   const [formData, setFormData] = useState({
     full_name: "",
+    email: "",
     course: "",
     interests: [] as string[],
     status: "available",
@@ -67,6 +68,7 @@ const ProfileModal = ({ open, onOpenChange }: ProfileModalProps) => {
       if (profile) {
         setFormData({
           full_name: profile.full_name || "",
+          email: profile.email || "",
           course: profile.course || "",
           interests: profile.interests || [],
           status: profile.status || "available",
@@ -104,6 +106,29 @@ const ProfileModal = ({ open, onOpenChange }: ProfileModalProps) => {
     }));
   };
 
+  // Check if required fields are filled
+  const isFormValid = () => {
+    return formData.full_name.trim() !== "" &&
+           formData.email.trim() !== "" &&
+           formData.course.trim() !== "" &&
+           formData.year.trim() !== "" &&
+           formData.description.trim() !== "" &&
+           formData.interests.length > 0;
+  };
+
+  // Prevent closing modal if form is not valid
+  const handleModalChange = (open: boolean) => {
+    if (!open && !isFormValid()) {
+      toast({
+        title: "Profile Incomplete",
+        description: "Please fill in all required fields before closing.",
+        variant: "destructive",
+      });
+      return;
+    }
+    onOpenChange(open);
+  };
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setLoading(true);
@@ -123,6 +148,7 @@ const ProfileModal = ({ open, onOpenChange }: ProfileModalProps) => {
 
       const updateData = {
         full_name: formData.full_name,
+        email: formData.email,
         course: formData.course,
         interests: formData.interests,
         status: formData.status,
@@ -164,7 +190,7 @@ const ProfileModal = ({ open, onOpenChange }: ProfileModalProps) => {
   };
 
   return (
-    <Dialog open={open} onOpenChange={onOpenChange}>
+    <Dialog open={open} onOpenChange={handleModalChange}>
       <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
         <DialogHeader>
           <DialogTitle>Update Profile</DialogTitle>
@@ -201,6 +227,18 @@ const ProfileModal = ({ open, onOpenChange }: ProfileModalProps) => {
                 </SelectContent>
               </Select>
             </div>
+          </div>
+
+          <div className="space-y-2">
+            <Label htmlFor="email">Email Address</Label>
+            <Input
+              id="email"
+              type="email"
+              value={formData.email}
+              onChange={(e) => handleInputChange("email", e.target.value)}
+              placeholder="Enter your email address"
+              required
+            />
           </div>
 
           <div className="grid grid-cols-2 gap-4">
@@ -301,11 +339,11 @@ const ProfileModal = ({ open, onOpenChange }: ProfileModalProps) => {
             <Button
               type="button"
               variant="outline"
-              onClick={() => onOpenChange(false)}
+              onClick={() => handleModalChange(false)}
             >
               Cancel
             </Button>
-            <Button type="submit" disabled={loading}>
+            <Button type="submit" disabled={loading || !isFormValid()}>
               {loading ? "Updating..." : "Update Profile"}
             </Button>
           </div>
