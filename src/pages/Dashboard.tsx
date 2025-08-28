@@ -474,11 +474,7 @@ const Dashboard = () => {
                         </div>
                       </td>
                       <td className="p-4 text-muted-foreground">
-                        {userRole === 'admin'
-                          ? "Email hidden for privacy"
-                          : profile.user_id === currentUser?.id
-                          ? currentUser?.email
-                          : "Email hidden"}
+                        {currentUser?.email || "No Email"}
                       </td>
                       <td className="p-4">{profile.course || "No Course"}</td>
                       <td className="p-4">
@@ -631,9 +627,7 @@ const Dashboard = () => {
                   <div>
                     <h4 className="font-medium mb-2">Contact Information</h4>
                     <p className="text-sm text-muted-foreground">
-                      {userRole === 'admin'
-                        ? "Contact admin for email"
-                        : "Email hidden for privacy"}
+                      Email: {currentUser?.email || "No Email"}
                     </p>
                     <p className="text-sm text-muted-foreground">
                       Last Active:{" "}
