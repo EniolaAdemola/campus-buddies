@@ -34,6 +34,7 @@ interface Profile {
   id: string;
   user_id: string;
   full_name: string | null;
+  email?: string | null;
   course: string | null;
   interests: string[] | null;
   status: string | null;
@@ -172,29 +173,39 @@ const Dashboard = () => {
   const loadProfiles = async () => {
     try {
       setLoading(true);
-      const { data, error } = await supabase
-        .from("profiles")
-        .select("*")
-        .order("full_name");
+      
+      // Try to get profiles with emails first (for admins)
+      const { data: profilesWithEmailsData, error: emailError } = await supabase.rpc('get_profiles_with_emails');
+      
+      if (!emailError && profilesWithEmailsData) {
+        setProfiles(profilesWithEmailsData);
+        // Extract unique courses for filter
+        const courses = [
+          ...new Set(profilesWithEmailsData.map((p: any) => p.course).filter(Boolean)),
+        ];
+        setAvailableCourses(courses);
+      } else {
+        // Fallback to regular profiles if not admin
+        const { data: profilesData, error } = await supabase
+          .from('profiles')
+          .select('*')
+          .order('created_at', { ascending: false });
 
-      if (error) {
-        console.error("Error fetching profiles:", error);
-        toast({
-          title: "Error",
-          description: "Failed to load student profiles",
-          variant: "destructive",
-        });
-        return;
+        if (error) throw error;
+        setProfiles(profilesData || []);
+        // Extract unique courses for filter
+        const courses = [
+          ...new Set(profilesData?.map((p) => p.course).filter(Boolean) || []),
+        ];
+        setAvailableCourses(courses);
       }
-
-      setProfiles(data || []);
-      // Extract unique courses for filter
-      const courses = [
-        ...new Set(data?.map((p) => p.course).filter(Boolean) || []),
-      ];
-      setAvailableCourses(courses);
     } catch (error) {
-      console.error("Error:", error);
+      console.error('Error loading profiles:', error);
+      toast({
+        title: "Error",
+        description: "Failed to load profiles",
+        variant: "destructive",
+      });
     } finally {
       setLoading(false);
     }
@@ -474,7 +485,7 @@ const Dashboard = () => {
                         </div>
                       </td>
                       <td className="p-4 text-muted-foreground">
-                        {currentUser?.email || "No Email"}
+                        {profile.email || "No Email"}
                       </td>
                       <td className="p-4">{profile.course || "No Course"}</td>
                       <td className="p-4">
@@ -627,7 +638,7 @@ const Dashboard = () => {
                   <div>
                     <h4 className="font-medium mb-2">Contact Information</h4>
                     <p className="text-sm text-muted-foreground">
-                      Email: {currentUser?.email || "No Email"}
+                      Email: {selectedProfile.email || "No Email"}
                     </p>
                     <p className="text-sm text-muted-foreground">
                       Last Active:{" "}

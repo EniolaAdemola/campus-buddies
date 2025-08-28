@@ -92,6 +92,25 @@ export type Database = {
         Args: Record<PropertyKey, never>
         Returns: Database["public"]["Enums"]["app_role"]
       }
+      get_profiles_with_emails: {
+        Args: Record<PropertyKey, never>
+        Returns: {
+          avatar: string
+          course: string
+          created_at: string
+          description: string
+          email: string
+          full_name: string
+          group_number: number
+          id: string
+          interests: string[]
+          last_active: string
+          status: string
+          updated_at: string
+          user_id: string
+          year: string
+        }[]
+      }
       has_role: {
         Args: {
           _role: Database["public"]["Enums"]["app_role"]
