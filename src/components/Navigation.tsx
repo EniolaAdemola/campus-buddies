@@ -1,6 +1,7 @@
 import { Link } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
+import { SidebarTrigger } from "@/components/ui/sidebar";
 import { BookOpen } from "lucide-react";
 import { useState, useEffect } from "react";
 import ProfileModal from "./ProfileModal";
@@ -71,11 +72,14 @@ const Navigation = () => {
     <nav className="sticky top-0 z-50 bg-card/95 backdrop-blur-sm border-b border-border">
       <div className="container mx-auto px-4 py-4">
         <div className="flex items-center justify-between">
-          {/* Logo */}
-          <Link to="/" className="flex items-center gap-2 text-xl font-bold text-primary">
-            <BookOpen className="h-6 w-6" />
-            LisioBuddy
-          </Link>
+          {/* Sidebar trigger and Logo */}
+          <div className="flex items-center gap-3">
+            <SidebarTrigger className="h-8 w-8" />
+            <Link to="/" className="flex items-center gap-2 text-xl font-bold text-primary">
+              <BookOpen className="h-6 w-6" />
+              LisioBuddy
+            </Link>
+          </div>
 
           {/* Navigation Links */}
           <div className="hidden md:flex items-center gap-6">
@@ -93,6 +97,9 @@ const Navigation = () => {
             </Link>
             <Link to="/dashboard" className="text-foreground hover:text-primary transition-colors">
               Dashboard
+            </Link>
+            <Link to="/api-config" className="text-foreground hover:text-primary transition-colors">
+              API Config
             </Link>
           </div>
 

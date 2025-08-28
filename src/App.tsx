@@ -13,6 +13,7 @@ import Support from "./pages/Support";
 import Login from "./pages/Login";
 import Signup from "./pages/Signup";
 import Dashboard from "./pages/Dashboard";
+import ApiConfig from "./pages/ApiConfig";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
@@ -25,18 +26,14 @@ const App = () => (
       <BrowserRouter>
         <SidebarProvider>
           <div className="min-h-screen flex w-full">
-            {/* Desktop: Show sidebar */}
-            <div className="hidden lg:block">
-              <AppSidebar />
-            </div>
+            {/* Sidebar for all screen sizes */}
+            <AppSidebar />
             
             <div className="flex-1 flex flex-col">
-              {/* Mobile: Show navigation, Desktop: Hidden */}
-              <div className="lg:hidden">
-                <Navigation />
-              </div>
+              {/* Navigation bar with sidebar trigger */}
+              <Navigation />
               
-              {/* Mobile: Show sidebar trigger */}
+              {/* Mobile: Show sidebar trigger header */}
               <header className="lg:hidden h-14 flex items-center justify-between border-b border-border bg-background px-4">
                 <SidebarTrigger className="h-8 w-8" />
                 <h1 className="text-lg font-semibold">LisioBuddy</h1>
@@ -52,6 +49,7 @@ const App = () => (
                   <Route path="/login" element={<Login />} />
                   <Route path="/signup" element={<Signup />} />
                   <Route path="/dashboard" element={<Dashboard />} />
+                  <Route path="/api-config" element={<ApiConfig />} />
                   {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
                   <Route path="*" element={<NotFound />} />
                 </Routes>

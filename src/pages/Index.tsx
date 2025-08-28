@@ -170,10 +170,9 @@ const Index = () => {
             </div>
           </div>
           <div className="border-t border-background/10 mt-8 pt-8 text-center text-background/70">
-            <p className="flex items-center justify-center gap-2 mb-2">
+            <p className="flex items-center justify-center gap-2">
               Built with 💜 by FGD Students 2025
             </p>
-            <p>&copy; 2024 LisioBuddy. All rights reserved.</p>
           </div>
         </div>
       </footer>

@@ -6,6 +6,7 @@ import {
   MessageCircle, 
   HelpCircle, 
   LayoutDashboard,
+  Settings,
   BookOpen,
   LogOut,
   LogIn,
@@ -32,10 +33,11 @@ import ProfileModal from "./ProfileModal";
 
 const navigationItems = [
   { title: "Home", url: "/", icon: Home },
+  { title: "Dashboard", url: "/dashboard", icon: LayoutDashboard },
+  { title: "API Config", url: "/api-config", icon: Settings },
   { title: "About", url: "/about", icon: Info },
   { title: "Contact", url: "/contact", icon: MessageCircle },
   { title: "Support", url: "/support", icon: HelpCircle },
-  { title: "Dashboard", url: "/dashboard", icon: LayoutDashboard },
 ];
 
 export function AppSidebar() {
