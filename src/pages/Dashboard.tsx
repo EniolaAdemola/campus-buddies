@@ -174,31 +174,20 @@ const Dashboard = () => {
     try {
       setLoading(true);
       
-      // Try to get profiles with emails first (for admins)
-      const { data: profilesWithEmailsData, error: emailError } = await supabase.rpc('get_profiles_with_emails');
-      
-      if (!emailError && profilesWithEmailsData) {
-        setProfiles(profilesWithEmailsData);
-        // Extract unique courses for filter
-        const courses = [
-          ...new Set(profilesWithEmailsData.map((p: any) => p.course).filter(Boolean)),
-        ];
-        setAvailableCourses(courses);
-      } else {
-        // Fallback to regular profiles if not admin
-        const { data: profilesData, error } = await supabase
-          .from('profiles')
-          .select('*')
-          .order('created_at', { ascending: false });
+      // Load all profiles directly (emails are stored on profiles)
+      const { data: profilesData, error } = await supabase
+        .from('profiles')
+        .select('*')
+        .order('created_at', { ascending: false });
 
-        if (error) throw error;
-        setProfiles(profilesData || []);
-        // Extract unique courses for filter
-        const courses = [
-          ...new Set(profilesData?.map((p) => p.course).filter(Boolean) || []),
-        ];
-        setAvailableCourses(courses);
-      }
+      if (error) throw error;
+
+      setProfiles(profilesData || []);
+      // Extract unique courses for filter
+      const courses = [
+        ...new Set((profilesData || []).map((p) => p.course).filter(Boolean)),
+      ];
+      setAvailableCourses(courses);
     } catch (error) {
       console.error('Error loading profiles:', error);
       toast({
